@@ -54,6 +54,8 @@ impl Echo {
         })
     }
 
+    pub async fn post(&self, url: &str) -> Result<Response, reqwest::Error> {}
+
     /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
