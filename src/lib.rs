@@ -66,8 +66,6 @@ impl Echo {
         let headers = response.headers().clone();
         let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
 
-        // let body = response.text().await?;
-        // Ok(body)
         Ok(Response {
             data,
             status,
@@ -78,6 +76,7 @@ impl Echo {
         })
     }
 
+    /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
@@ -97,11 +96,6 @@ pub struct Response {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_lol() {
-        assert_eq!(2, 2)
-    }
 
     #[tokio::test]
     async fn test_get() {
