@@ -3,26 +3,6 @@ pub struct Axios {
 }
 
 impl Axios {
-    // pub fn configure(url: Option<String>) -> Axios {
-    //     // let parsed_url = if url.ends_with("/") {
-    //     //     url.trim_end_matches("/").to_string()
-    //     // } else {
-    //     //     url
-    //     // };
-    //
-    //     let parsed_url = url.map(|u| {
-    //         if u.ends_with("/") {
-    //             u.trim_end_matches("/").to_string()
-    //         } else {
-    //             u
-    //         }
-    //     });
-    //
-    //     Axios {
-    //         // base_url: Some(parsed_url),
-    //         base_url: parsed_url,
-    //     }
-    // }
     pub fn configure<U>(url: U) -> Self
     where
         U: Into<Option<String>>,
