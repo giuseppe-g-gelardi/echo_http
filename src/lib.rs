@@ -1,42 +1,45 @@
-pub struct Axios {
+pub struct Echo {
     pub base_url: Option<String>,
 }
 
-impl Axios {
+impl Echo {
+    /// Configure the Echo instance with an optional base URL
     pub fn configure<U>(url: U) -> Self
     where
         U: Into<Option<String>>,
     {
-        let parsed_url = url.into().map(|u| {
-            if u.ends_with("/") {
-                u.trim_end_matches("/").to_string()
-            } else {
-                u
-            }
-        });
+        let parsed_url = url.into().map(|u| Self::parse_url(&u));
 
-        Axios {
+        Echo {
             base_url: parsed_url,
         }
     }
 
+    /// get request
     pub async fn get(&self, url: String) -> String {
         if let Some(base_url) = &self.base_url {
-            // Trim leading slash from the endpoint if necessary
-            let parsed_endpoint = if url.starts_with("/") {
-                url.trim_start_matches("/").to_string()
-            } else {
-                url
-            };
-
-            // Combine base URL with the endpoint
+            let parsed_endpoint = Self::parse_url(&url);
             format!("{}/{}", base_url, parsed_endpoint)
         } else {
-            // If base_url is None, use the provided URL as-is
             url
         }
         // do the request
     }
+
+    fn parse_url(url: &str) -> String {
+        let url = url.trim_start_matches("/").trim_end_matches("/");
+
+        url.to_string()
+    }
+}
+struct Headers(String, String); // ::new() // new takes 2 strings and parses correctly
+struct Respo<T, C, R> {
+    data: T,
+    status: i32,
+    status_text: String,
+    headers: Headers, // sigh..
+    config: C,        // Echo::config
+    request: R,       // duh..
 }
 
 #[cfg(test)]
@@ -45,19 +48,19 @@ mod tests {
 
     #[test]
     fn test_configure_url() {
-        let result = Axios::configure("google.com".to_string());
+        let result = Echo::configure("google.com".to_string());
         assert_eq!(result.base_url, "google.com".to_string().into());
     }
 
     #[test]
     fn test_url_parsed() {
-        let result = Axios::configure("http://github.com/".to_string());
+        let result = Echo::configure("http://github.com/".to_string());
         assert_eq!(result.base_url, Some("http://github.com".to_string()));
     }
 
     #[tokio::test]
     async fn test_get_output() {
-        let config = Axios::configure("http://github.com/".to_string());
+        let config = Echo::configure("http://github.com/".to_string());
         let result = config.get("users".to_string()).await;
         let expected = "http://github.com/users".to_string();
         assert_eq!(result, expected)
@@ -65,7 +68,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_no_base_url() {
-        let config = Axios::configure(None);
+        let config = Echo::configure(None);
         let res = config.get("http://google.com".to_string()).await;
         let expected = "http://google.com".to_string();
         assert_eq!(res, expected)
