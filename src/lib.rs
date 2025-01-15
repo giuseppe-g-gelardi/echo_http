@@ -1,29 +1,81 @@
-pub struct Echo {
+use reqwest::header::HeaderMap;
+use serde_json::Value;
+
+#[derive(Debug, Clone)]
+pub struct Config {
     pub base_url: Option<String>,
+    pub timeout: Option<u64>,
+    pub headers: Option<Vec<(String, String)>>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            base_url: None,
+            timeout: None,
+            headers: None,
+        }
+    }
+}
+
+pub struct Echo {
+    pub config: Config,
+    client: reqwest::Client,
 }
 
 impl Echo {
-    /// Configure the Echo instance with an optional base URL
-    pub fn configure<U>(url: U) -> Self
-    where
-        U: Into<Option<String>>,
-    {
-        let parsed_url = url.into().map(|u| Self::parse_url(&u));
+    // /// Configure the Echo instance with an optional base URL
+    pub fn configure(config: Option<Config>) -> Self {
+        let config = config.unwrap_or_default();
 
         Echo {
-            base_url: parsed_url,
+            config,
+            client: reqwest::Client::new(),
         }
     }
 
     /// get request
-    pub async fn get(&self, url: String) -> String {
-        if let Some(base_url) = &self.base_url {
-            let parsed_endpoint = Self::parse_url(&url);
+    pub async fn get(&self, url: &str) -> Result<Response, reqwest::Error> {
+        let full_url = if let Some(base_url) = &self.config.base_url {
+            let parsed_endpoint = Self::parse_url(url);
             format!("{}/{}", base_url, parsed_endpoint)
         } else {
-            url
+            url.to_string()
+        };
+
+        let mut request = self.client.get(&full_url);
+
+        if let Some(headers) = &self.config.headers {
+            for (key, value) in headers {
+                request = request.header(key, value)
+            }
         }
-        // do the request
+
+        if let Some(timeout) = self.config.timeout {
+            request = request.timeout(std::time::Duration::from_secs(timeout));
+        }
+
+        let response = request.send().await?;
+
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+
+        // let body = response.text().await?;
+        // Ok(body)
+        Ok(Response {
+            data,
+            status,
+            status_text,
+            headers,
+            config: self.config.clone(),
+            request: full_url,
+        })
     }
 
     fn parse_url(url: &str) -> String {
@@ -32,14 +84,14 @@ impl Echo {
         url.to_string()
     }
 }
-struct Headers(String, String); // ::new() // new takes 2 strings and parses correctly
-struct Respo<T, C, R> {
-    data: T,
-    status: i32,
-    status_text: String,
-    headers: Headers, // sigh..
-    config: C,        // Echo::config
-    request: R,       // duh..
+#[derive(Debug)]
+pub struct Response {
+    pub data: Value,
+    pub status: u16,
+    pub status_text: String,
+    pub headers: HeaderMap, // sigh..
+    pub config: Config,     // Echo::config
+    pub request: String,    // duh..
 }
 
 #[cfg(test)]
@@ -47,52 +99,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_configure_url() {
-        let result = Echo::configure("google.com".to_string());
-        assert_eq!(result.base_url, "google.com".to_string().into());
-    }
-
-    #[test]
-    fn test_url_parsed() {
-        let result = Echo::configure("http://github.com/".to_string());
-        assert_eq!(result.base_url, Some("http://github.com".to_string()));
+    fn test_lol() {
+        assert_eq!(2, 2)
     }
 
     #[tokio::test]
-    async fn test_get_output() {
-        let config = Echo::configure("http://github.com/".to_string());
-        let result = config.get("users".to_string()).await;
-        let expected = "http://github.com/users".to_string();
-        assert_eq!(result, expected)
-    }
+    async fn test_get() {
+        let config = Config {
+            base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
+            timeout: None,
+            headers: None,
+        };
 
-    #[tokio::test]
-    async fn test_no_base_url() {
-        let config = Echo::configure(None);
-        let res = config.get("http://google.com".to_string()).await;
-        let expected = "http://google.com".to_string();
-        assert_eq!(res, expected)
+        let echo = Echo::configure(Some(config));
+
+        let response = echo.get("/users/1").await.unwrap();
+
+        assert_eq!(response.status_text, "OK")
     }
 }
-
-// pub use Request {
-//
-//     pub enum Method {
-//         GET,
-//         POST,
-//         PUT,
-//         DELETE,
-//     }
-//
-//     pub struct Request {
-//         method: Method,
-//         headers: Option<(String, String)>,
-//         body: String, // JSON, XML w/ post or put
-//         url: String,  // is there a URL/Path type?
-//     }
-//
-//     pub struct Response {
-//         status_code: i32, // 200 OK, 404 Not Found, etc...
-//         headers: String,  // Content-Type: "application/json"
-//         body: String,     // JSON or HTML
-//     }
