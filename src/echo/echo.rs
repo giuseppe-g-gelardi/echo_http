@@ -112,6 +112,8 @@ impl Echo {
 
 #[cfg(test)]
 mod tests {
+    use crate::Nope;
+
     use super::*;
 
     #[tokio::test]
@@ -127,5 +129,15 @@ mod tests {
         let response = echo.get("/users/1").await.unwrap();
 
         assert_eq!(response.status_text, "OK")
+    }
+
+    #[tokio::test]
+    async fn test_post_no_data() {
+        let echo = Echo::configure(None);
+        let response = echo
+            .post("https://jsonplaceholder.typicode.com/users/", Nope)
+            .await.unwrap();
+
+        assert_eq!(response.status, 201)
     }
 }
