@@ -14,12 +14,7 @@ impl Echo {
 
     /// get request
     pub async fn get(&self, url: &str) -> Result<Response, reqwest::Error> {
-        let full_url = if let Some(base_url) = &self.config.base_url {
-            let parsed_endpoint = Self::parse_url(url);
-            format!("{}/{}", base_url, parsed_endpoint)
-        } else {
-            url.to_string()
-        };
+        let full_url = self.get_full_url(url);
 
         let mut request = self.client.get(&full_url);
 
@@ -54,7 +49,58 @@ impl Echo {
         })
     }
 
-    pub async fn post(&self, url: &str) -> Result<Response, reqwest::Error> {}
+    fn get_full_url(&self, url: &str) -> String {
+        if let Some(base_url) = &self.config.base_url {
+            let parsed_endpoint = Self::parse_url(url);
+            format!("{}/{}", base_url, parsed_endpoint)
+        } else {
+            url.to_string()
+        }
+    }
+
+    /// post request
+    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response, reqwest::Error>
+    where
+        T: serde::Serialize,
+    {
+        let full_url = self.get_full_url(url);
+
+        let mut request = self.client.post(&full_url);
+
+        if let Some(headers) = &self.config.headers {
+            for (key, value) in headers {
+                request = request.header(key, value)
+            }
+        }
+
+        if let Some(timeout) = self.config.timeout {
+            request = request.timeout(std::time::Duration::from_secs(timeout));
+        }
+
+        if let Some(body) = data {
+            request = request.json(&body);
+        }
+
+        let response = request.send().await?;
+
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+
+        Ok(Response {
+            data,
+            status,
+            status_text,
+            headers,
+            config: self.config.clone(),
+            request: full_url,
+        })
+    }
 
     /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
