@@ -1,5 +1,4 @@
-use crate::{Config, Echo, Nope, Response};
-// use serde_json::Value;
+use crate::{Echo, Nope, RequestConfig, Response};
 
 impl Echo {
     /// Create an Echo instance with the `configure()` method.
@@ -33,7 +32,7 @@ impl Echo {
     /// let res = echo.get("https://jsonplaceholder.typicode.com/users/1")
     /// ```
     ///
-    pub fn configure(config: Option<Config>) -> Self {
+    pub fn configure(config: Option<RequestConfig>) -> Self {
         let config = config.unwrap_or_default();
 
         Echo {
@@ -135,11 +134,8 @@ mod tests {
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_get() {
-        let config = Config {
-            base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
-            timeout: None,
-            headers: None,
-        };
+        let mut config = RequestConfig::default();
+        config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
 
         let echo = Echo::configure(Some(config));
 
