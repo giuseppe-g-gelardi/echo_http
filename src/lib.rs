@@ -1,5 +1,4 @@
 pub mod echo;
-pub mod method;
 pub mod response;
 pub mod request_config;
 
