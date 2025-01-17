@@ -99,12 +99,27 @@ impl Echo {
         let request = self.client.put(&full_url);
         self.send_request(request, url, data).await
     }
+
+    /// delete request
+    /// # example
+    /// ```rs
+    /// let echo = Echo::configure(None);
+    /// let deleted = echo.delete("https://jsonplaceholder.typicode.com/posts/1").await?;
+    /// ```
+    /// `response.data` should return an empty object. it will look like this: `Object {}`
+    /// but it will be equal to `serde_json::json!({})`
+    pub async fn delete(&self, url: &str) -> Result<Response, reqwest::Error> {
+        let full_url = self.get_full_url(url);
+        let request = self.client.delete(&full_url);
+        self.send_request(request, url, Nope).await
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::Nope;
     use serde::Serialize;
+    use serde_json::json;
 
     use super::*;
 
@@ -162,5 +177,19 @@ mod tests {
             .unwrap();
 
         assert_eq!(put.data.get("title"), Some(&serde_json::json!("title")));
+    }
+
+    #[tokio::test]
+    async fn test_delete() {
+        let echo = Echo::configure(None);
+
+        let deleted = echo
+            .delete("https://jsonplaceholder.typicode.com/posts/1")
+            .await
+            .unwrap();
+
+        assert_eq!(deleted.data, json!({}));
+        assert_eq!(deleted.status, 200);
+        assert_eq!(deleted.status_text, "OK");
     }
 }
