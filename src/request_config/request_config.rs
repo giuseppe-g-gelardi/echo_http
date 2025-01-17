@@ -8,7 +8,7 @@ impl Default for RequestConfig {
             url: None,
             method: Method::Get,
             base_url: None,
-            timeout: None,
+            timeout: Some(1000),
             headers: None,
             params: None,
             data: None,

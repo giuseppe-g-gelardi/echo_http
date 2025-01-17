@@ -18,6 +18,44 @@ impl Echo {
         }
     }
 
+    fn apply_headers(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if let Some(headers) = &self.config.headers {
+            for (key, value) in headers {
+                request = request.header(key, value);
+            }
+        }
+        request
+    }
+
+    fn apply_timeout(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if let Some(timeout) = self.config.timeout {
+            request = request.timeout(std::time::Duration::from_secs(timeout))
+        }
+        request
+    }
+
+    fn apply_params(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if let Some(params) = &self.config.params {
+            request = request.query(params);
+            // todo! implement parsing for params
+        }
+        request
+    }
+
+    fn apply_body<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        body: Option<T>,
+    ) -> reqwest::RequestBuilder
+    where
+        T: serde::Serialize,
+    {
+        if let Some(body) = body {
+            request = request.json(&body);
+        }
+        request
+    }
+
     pub(crate) async fn send_request<T>(
         &self,
         mut request: reqwest::RequestBuilder,
@@ -27,19 +65,10 @@ impl Echo {
     where
         T: serde::Serialize,
     {
-        if let Some(headers) = &self.config.headers {
-            for (key, value) in headers {
-                request = request.header(key, value)
-            }
-        }
-
-        if let Some(timeout) = self.config.timeout {
-            request = request.timeout(std::time::Duration::from_secs(timeout));
-        }
-
-        if let Some(body) = body {
-            request = request.json(&body);
-        }
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
 
         let response = request.send().await?;
 
