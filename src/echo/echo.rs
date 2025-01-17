@@ -24,8 +24,8 @@ impl Echo {
     /// ```rs
     /// let config_withurl = Echo::configure(Some(echo_config));```
     /// or
-    /// ```rs
-    /// let echo = Echo::configure(None)```
+    /// ```
+    /// let echo = Echo::configure(None);```
     ///
     /// passing None allows you to send a request to a full url
     /// example:
@@ -123,6 +123,15 @@ mod tests {
 
     use super::*;
 
+    #[derive(Debug, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Post {
+        user_id: u16,
+        id: u16,
+        title: String,
+        body: String,
+    }
+
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_get() {
@@ -141,6 +150,29 @@ mod tests {
 
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
+    async fn test_post() {
+        let echo = Echo::configure(None);
+        let new_post = Post {
+            user_id: 1,
+            id: 1,
+            title: "title".to_string(),
+            body: "body".to_string(),
+        };
+
+        let response = echo
+            .post::<Post>(
+                "https://jsonplaceholder.typicode.com/users/",
+                Some(new_post),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status, 201);
+        assert_eq!(response.status_text, "Created")
+    }
+
+    #[ignore = "dont want to ddos jsonplaceholder"]
+    #[tokio::test]
     async fn test_post_no_data() {
         let echo = Echo::configure(None);
         let response = echo
@@ -155,14 +187,6 @@ mod tests {
     #[tokio::test]
     async fn test_put() {
         let echo = Echo::configure(None);
-        #[derive(Debug, Serialize)]
-        #[serde(rename_all = "camelCase")]
-        struct Post {
-            user_id: u16,
-            id: u16,
-            title: String,
-            body: String,
-        }
 
         let new_post = Post {
             user_id: 1,
