@@ -1,10 +1,9 @@
+use crate::RequestConfig;
+
 pub mod echo;
 pub mod echo_internal;
 
-use crate::Config;
-
 pub struct Echo {
-    pub config: Config,
+    pub config: RequestConfig,
     client: reqwest::Client,
 }
-
