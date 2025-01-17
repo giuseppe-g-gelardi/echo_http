@@ -1,7 +1,8 @@
 pub mod request_config;
 
-use crate::method::Method;
+// use crate::method::Method;
 use reqwest::header::HeaderMap;
+use reqwest::Method;
 use serde_json::Value;
 use std::collections::HashMap;
 
