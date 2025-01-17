@@ -1,8 +1,38 @@
-use crate::{Config, Echo, Response};
-use serde_json::Value;
+use crate::{Config, Echo, Nope, Response};
+// use serde_json::Value;
 
 impl Echo {
-    // /// Configure the Echo instance with an optional base URL
+    /// Create an Echo instance with the `configure()` method.
+    /// configure takes an Option;
+    /// ```rs
+    /// Option<Config>
+    /// ```
+    /// or
+    /// ```rs
+    /// None
+    /// ```
+    ///
+    /// Configure the Echo instance with an optional base URL
+    /// ```rs
+    /// let echo_config = Config {
+    ///     base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
+    ///     timeout: None,
+    ///     headers: None,
+    /// };
+    /// ```
+    ///
+    /// ```rs
+    /// let config_withurl = Echo::configure(Some(echo_config));```
+    /// or
+    /// ```rs
+    /// let echo = Echo::configure(None)```
+    ///
+    /// passing None allows you to send a request to a full url
+    /// example:
+    /// ```rs
+    /// let res = echo.get("https://jsonplaceholder.typicode.com/users/1")
+    /// ```
+    ///
     pub fn configure(config: Option<Config>) -> Self {
         let config = config.unwrap_or_default();
 
@@ -13,106 +43,68 @@ impl Echo {
     }
 
     /// get request
+    /// ```rs
+    /// let echo = Echo::configure(None);
+    /// let res = echo.get("https://jsonplaceholder.typicode.com/").await?;
+    /// ```
     pub async fn get(&self, url: &str) -> Result<Response, reqwest::Error> {
         let full_url = self.get_full_url(url);
-
-        let mut request = self.client.get(&full_url);
-
-        if let Some(headers) = &self.config.headers {
-            for (key, value) in headers {
-                request = request.header(key, value)
-            }
-        }
-
-        if let Some(timeout) = self.config.timeout {
-            request = request.timeout(std::time::Duration::from_secs(timeout));
-        }
-
-        let response = request.send().await?;
-
-        let status = response.status().as_u16();
-        let status_text = response
-            .status()
-            .canonical_reason()
-            .unwrap_or("")
-            .to_string();
-        let headers = response.headers().clone();
-        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
-
-        Ok(Response {
-            data,
-            status,
-            status_text,
-            headers,
-            config: self.config.clone(),
-            request: full_url,
-        })
-    }
-
-    fn get_full_url(&self, url: &str) -> String {
-        if let Some(base_url) = &self.config.base_url {
-            let parsed_endpoint = Self::parse_url(url);
-            format!("{}/{}", base_url, parsed_endpoint)
-        } else {
-            url.to_string()
-        }
+        let request = self.client.get(&full_url);
+        self.send_request(request, url, Nope).await
     }
 
     /// post request
+    /// # example:
+    /// ```rs
+    /// let echo = Echo::configure(config{...});
+    ///
+    /// let res = echo.post("/users", Nope).await?;
+    /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response, reqwest::Error>
     where
         T: serde::Serialize,
     {
         let full_url = self.get_full_url(url);
-
-        let mut request = self.client.post(&full_url);
-
-        if let Some(headers) = &self.config.headers {
-            for (key, value) in headers {
-                request = request.header(key, value)
-            }
-        }
-
-        if let Some(timeout) = self.config.timeout {
-            request = request.timeout(std::time::Duration::from_secs(timeout));
-        }
-
-        if let Some(body) = data {
-            request = request.json(&body);
-        }
-
-        let response = request.send().await?;
-
-        let status = response.status().as_u16();
-        let status_text = response
-            .status()
-            .canonical_reason()
-            .unwrap_or("")
-            .to_string();
-        let headers = response.headers().clone();
-        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
-
-        Ok(Response {
-            data,
-            status,
-            status_text,
-            headers,
-            config: self.config.clone(),
-            request: full_url,
-        })
+        let request = self.client.post(&full_url);
+        self.send_request(request, url, data).await
     }
 
-    /// method to parse leading and or trailing slashes from the url
-    fn parse_url(url: &str) -> String {
-        let url = url.trim_start_matches("/").trim_end_matches("/");
-
-        url.to_string()
+    /// put request
+    /// # example:
+    /// ```rs
+    /// let echo = Echo::configure(None);
+    /// #[derive(Debug, Serialize)]
+    /// #[serde(rename_all = "camelCase")]
+    /// struct Post {
+    ///    user_id: u16,
+    ///    id: u16,
+    ///    title: String,
+    ///    body: String,
+    /// }
+    ///
+    /// let updated_post = Post {
+    ///    user_id: 1,
+    ///    id: 1,
+    ///    title: "post title".to_string(),
+    ///    body: "compelling post body".to_string(),
+    /// };
+    ///
+    /// let put = echo.put::<Post>("https://jsonplaceholder.typicode.com/posts/1", Some(updated_post)).await?;
+    /// ```
+    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response, reqwest::Error>
+    where
+        T: serde::Serialize,
+    {
+        let full_url = self.get_full_url(url);
+        let request = self.client.put(&full_url);
+        self.send_request(request, url, data).await
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::Nope;
+    use serde::Serialize;
 
     use super::*;
 
@@ -136,8 +128,39 @@ mod tests {
         let echo = Echo::configure(None);
         let response = echo
             .post("https://jsonplaceholder.typicode.com/users/", Nope)
-            .await.unwrap();
+            .await
+            .unwrap();
 
         assert_eq!(response.status, 201)
+    }
+
+    #[tokio::test]
+    async fn test_put() {
+        let echo = Echo::configure(None);
+        #[derive(Debug, Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Post {
+            user_id: u16,
+            id: u16,
+            title: String,
+            body: String,
+        }
+
+        let new_post = Post {
+            user_id: 1,
+            id: 1,
+            title: "title".to_string(),
+            body: "body".to_string(),
+        };
+
+        let put = echo
+            .put::<Post>(
+                "https://jsonplaceholder.typicode.com/posts/1",
+                Some(new_post),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(put.data.get("title"), Some(&serde_json::json!("title")));
     }
 }

@@ -1,4 +1,5 @@
 pub mod echo;
+pub mod echo_internal;
 
 use crate::Config;
 

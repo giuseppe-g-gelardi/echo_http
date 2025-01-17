@@ -10,7 +10,7 @@ pub struct Response {
     pub data: Value,
     pub status: u16,
     pub status_text: String,
-    pub headers: HeaderMap, // sigh..
-    pub config: Config,     // Echo::config
-    pub request: String,    // duh..
+    pub headers: HeaderMap,
+    pub config: Config,
+    pub request: String,
 }
