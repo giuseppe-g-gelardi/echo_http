@@ -123,6 +123,7 @@ mod tests {
 
     use super::*;
 
+    #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_get() {
         let config = Config {
@@ -138,6 +139,7 @@ mod tests {
         assert_eq!(response.status_text, "OK")
     }
 
+    #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_post_no_data() {
         let echo = Echo::configure(None);
@@ -149,6 +151,7 @@ mod tests {
         assert_eq!(response.status, 201)
     }
 
+    #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_put() {
         let echo = Echo::configure(None);
@@ -179,6 +182,7 @@ mod tests {
         assert_eq!(put.data.get("title"), Some(&serde_json::json!("title")));
     }
 
+    #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_delete() {
         let echo = Echo::configure(None);
