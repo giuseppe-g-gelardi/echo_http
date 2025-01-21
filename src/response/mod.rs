@@ -1,7 +1,5 @@
 pub mod response;
 
-// use crate::Config;
-
 use reqwest::header::HeaderMap;
 use serde_json::Value;
 

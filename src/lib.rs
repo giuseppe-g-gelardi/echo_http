@@ -8,7 +8,14 @@ pub use response::Response;
 
 
 /// Optional value `Nope`
-/// `Option<()> = None;` to circimvent passing `None::<()>` into a post request 
+/// ```rs 
+/// Option<()> = None;
+/// ``` 
+/// to circimvent passing 
+/// ```rs 
+/// None::<()>
+/// ``` 
+/// into a post request 
 /// with no body/data
 #[allow(non_upper_case_globals)]
 pub const Nope: Option<()> = None;
