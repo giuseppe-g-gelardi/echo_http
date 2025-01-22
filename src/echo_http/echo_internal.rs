@@ -1,10 +1,9 @@
+use crate::response::ResponseUnknown;
 use crate::{Echo, Response};
-use serde_json::Value;
 
 use super::echo_errors::EchoError;
 
 impl Echo {
-    /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
@@ -58,22 +57,14 @@ impl Echo {
         request
     }
 
-    pub(crate) async fn send_request<T>(
+    async fn parse_response<T>(
         &self,
-        mut request: reqwest::RequestBuilder,
+        response: reqwest::Response,
         url: &str,
-        body: Option<T>,
-    ) -> Result<Response, EchoError>
+    ) -> Result<Response<T>, EchoError>
     where
-        T: serde::Serialize,
+        T: serde::de::DeserializeOwned,
     {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-
         let status = response.status().as_u16();
         let status_text = response
             .status()
@@ -82,7 +73,11 @@ impl Echo {
             .to_string();
         let headers = response.headers().clone();
 
-        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+        let data = if response.status().is_success() {
+            response.json::<T>().await? // Deserialize directly to U
+        } else {
+            panic!("Unexpected response body or error for URL: {}", url)
+        };
 
         Ok(Response {
             data,
@@ -92,5 +87,109 @@ impl Echo {
             config: self.config.clone(),
             request: self.get_full_url(url),
         })
+    }
+
+    pub(crate) async fn send_request<T, U>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<Response<U>, EchoError>
+    where
+        T: serde::Serialize,
+        U: serde::de::DeserializeOwned,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response(response, url).await
+    }
+
+    // quick and dirty implementation for now
+    pub(crate) async fn send_request_unknown<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<ResponseUnknown, EchoError>
+    where
+        T: serde::Serialize,
+        // U: serde::de::DeserializeOwned,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        // self.parse_response(response, url).await
+
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .unwrap_or_else(|_| serde_json::Value::Null);
+
+        Ok(ResponseUnknown {
+            inner: Response {
+                data,
+                status,
+                status_text,
+                headers,
+                config: self.config.clone(),
+                request: self.get_full_url(url),
+            },
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::RequestConfig;
+
+    #[test]
+    fn test_parse_url() {
+        assert_eq!(Echo::parse_url("/endpoint/"), "endpoint");
+        assert_eq!(Echo::parse_url("endpoint/"), "endpoint");
+        assert_eq!(Echo::parse_url("/endpoint"), "endpoint");
+        assert_eq!(Echo::parse_url("endpoint"), "endpoint");
+    }
+
+    #[test]
+    fn test_get_full_url_with_base_url() {
+        let config = RequestConfig {
+            base_url: Some("https://api.example.com".to_string()),
+            ..Default::default()
+        };
+        let echo = Echo::configure(Some(config));
+
+        assert_eq!(
+            echo.get_full_url("/endpoint"),
+            "https://api.example.com/endpoint"
+        );
+        assert_eq!(
+            echo.get_full_url("endpoint/"),
+            "https://api.example.com/endpoint"
+        );
+    }
+
+    #[test]
+    fn test_get_full_url_without_base_url() {
+        let echo = Echo::configure(None);
+        assert_eq!(
+            echo.get_full_url("https://api.example.com/endpoint"),
+            "https://api.example.com/endpoint"
+        );
     }
 }
