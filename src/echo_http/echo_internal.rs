@@ -58,22 +58,11 @@ impl Echo {
         request
     }
 
-    pub(crate) async fn send_request<T>(
+    async fn parse_response(
         &self,
-        mut request: reqwest::RequestBuilder,
+        response: reqwest::Response,
         url: &str,
-        body: Option<T>,
-    ) -> Result<Response, EchoError>
-    where
-        T: serde::Serialize,
-    {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-
+    ) -> Result<Response, EchoError> {
         let status = response.status().as_u16();
         let status_text = response
             .status()
@@ -92,5 +81,43 @@ impl Echo {
             config: self.config.clone(),
             request: self.get_full_url(url),
         })
+    }
+
+    pub(crate) async fn send_request<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<Response, EchoError>
+    where
+        T: serde::Serialize,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response(response, url).await
+
+
+        // let status = response.status().as_u16();
+        // let status_text = response
+        //     .status()
+        //     .canonical_reason()
+        //     .unwrap_or("")
+        //     .to_string();
+        // let headers = response.headers().clone();
+        //
+        // let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+
+        // Ok(Response {
+        //     data,
+        //     status,
+        //     status_text,
+        //     headers,
+        //     config: self.config.clone(),
+        //     request: self.get_full_url(url),
+        // })
     }
 }

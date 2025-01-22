@@ -2,6 +2,15 @@
 name = "echo-http"
 version = "0.1.0"
 edition = "2021"
+authors = ["Giuseppe Gelardi <giuseppegelardi@icloud.com>"]
+license = "MIT"
+description = "Axios like http client for the typescipt devs that just can't let go"
+homepage = "https://github.com/giuseppe-g-gelardi/echo-http"
+repository = "https://github.com/giuseppe-g-gelardi/echo-http"
+documentation = "TODO: https://docs.rs/cargobase"
+readme = "README.md"
+keywords = ["http", "client", "axios"]
+categories = ["networking", "http", "utilities", "web", "client"]
 
 [dependencies]
 once_cell = "1.20.2"
@@ -13,8 +22,3 @@ tokio = { version = "1", features = ["full"] }
 
 [lib]
 path = "src/lib.rs"
-
-[[bin]]
-name = "main"
-path = "src/main.rs"
-

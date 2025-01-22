@@ -1,5 +1,3 @@
-// use crate::method::Method;
-
 use super::RequestConfig;
 use reqwest::Method;
 
