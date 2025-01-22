@@ -28,13 +28,6 @@ async fn main() -> Result<(), Err> {
         println!("Title: {}", post.get("title").unwrap());
     });
 
-    // let post_list = echo
-    //     .get::<Response<Vec<Post>>>("https://jsonplaceholder.typicode.com/posts")
-    //     .await?
-    //     .data;
-    //
-    // for post in post_list {}
-
     Ok(())
 }
 
