@@ -6,26 +6,21 @@ impl Echo {
     /// configure takes an Option;
     /// ```rs
     /// Option<Config> or None
-    /// ```
-    ///
+    /// 
     /// Configure the Echo instance with an optional base URL
-    /// ```rs
+    ///
     /// let echo_config = Config {
     ///     base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
     ///     timeout: None,
     ///     headers: None,
     /// };
-    ///
     /// let config_withurl = Echo::configure(Some(echo_config));
-    /// ```
+    ///
     /// or
-    /// ```
-    /// let echo = Echo::configure(None);
-    /// ```
     ///
     /// passing None allows you to send a request to a full url
-    /// example:
-    /// ```rs
+    /// let echo = Echo::configure(None);
+    ///
     /// let res = echo.get("https://jsonplaceholder.typicode.com/users/1")
     /// ```
     ///
