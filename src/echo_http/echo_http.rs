@@ -53,18 +53,21 @@ impl Echo {
     ///
     /// let response = echo.get_unknown("/users/1").await.unwrap();
     /// ```
-    pub async fn get_unknown(&self, url: &str) -> Result<Response, EchoError> {
-        let full_url = self.get_full_url(url);
-        let request = self.client.get(&full_url);
-        self.send_request(request, url, Nope).await
-    }
+    // pub async fn get_unknown(&self, url: &str) -> Result<Response, EchoError> {
+    //     let full_url = self.get_full_url(url);
+    //     let request = self.client.get(&full_url);
+    //     self.send_request(request, url, Nope).await
+    // }
 
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);
     /// let res = echo.get<Type>("https://jsonplaceholder.typicode.com/").await?;
     /// ```
-    pub async fn get<T>(&self, url: &str) -> Result<Response, EchoError> {
+    pub async fn get<U>(&self, url: &str) -> Result<Response<U>, EchoError>
+    where
+        U: serde::Serialize + serde::de::DeserializeOwned,
+    {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
         self.send_request(request, url, Nope).await
@@ -77,9 +80,9 @@ impl Echo {
     ///
     /// let res = echo.post("/users", Nope).await?;
     /// ```
-    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response, EchoError>
+    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
-        T: serde::Serialize,
+        T: serde::Serialize + serde::de::DeserializeOwned,
     {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
@@ -108,9 +111,9 @@ impl Echo {
     ///
     /// let put = echo.put::<Post>("https://jsonplaceholder.typicode.com/posts/1", Some(updated_post)).await?;
     /// ```
-    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response, EchoError>
+    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
-        T: serde::Serialize,
+        T: serde::Serialize + serde::de::DeserializeOwned,
     {
         let full_url = self.get_full_url(url);
         let request = self.client.put(&full_url);
@@ -125,7 +128,10 @@ impl Echo {
     /// ```
     /// `response.data` should return an empty object. it will look like this: `Object {}`
     /// but it will be equal to `serde_json::json!({})`
-    pub async fn delete(&self, url: &str) -> Result<Response, EchoError> {
+    pub async fn delete<U>(&self, url: &str) -> Result<Response<U>, EchoError>
+    where
+        U: serde::de::DeserializeOwned,
+    {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
         self.send_request(request, url, Nope).await
@@ -135,12 +141,12 @@ impl Echo {
 #[cfg(test)]
 mod tests {
     use crate::Nope;
-    use serde::Serialize;
-    use serde_json::json;
+    use serde::{Deserialize, Serialize};
+    // use serde_json::json;
 
     use super::*;
 
-    #[derive(Debug, Serialize)]
+    #[derive(Debug, Serialize, Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct Post {
         user_id: u16,
@@ -160,22 +166,22 @@ mod tests {
 
         let post = posts.data;
 
-        assert_eq!(post.get("id"), Some(&serde_json::json!(1)));
-        assert_eq!(post.get("userId"), Some(&serde_json::json!(1)));
+        assert_eq!(post.id, 1);
+        assert_eq!(post.user_id, 1);
     }
 
-    #[ignore = "dont want to ddos jsonplaceholder"]
-    #[tokio::test]
-    async fn test_get_unknown() {
-        let mut config = RequestConfig::default();
-        config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
-
-        let echo = Echo::configure(Some(config));
-
-        let response = echo.get_unknown("/users/1").await.unwrap();
-
-        assert_eq!(response.status_text, "OK")
-    }
+    // #[ignore = "dont want to ddos jsonplaceholder"]
+    // #[tokio::test]
+    // async fn test_get_unknown() {
+    //     let mut config = RequestConfig::default();
+    //     config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
+    //
+    //     let echo = Echo::configure(Some(config));
+    //
+    //     let response = echo.get_unknown("/users/1").await.unwrap();
+    //
+    //     assert_eq!(response.status_text, "OK")
+    // }
 
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
@@ -195,7 +201,6 @@ mod tests {
             )
             .await
             .unwrap();
-
         assert_eq!(response.status, 201);
         assert_eq!(response.status_text, "Created")
     }
@@ -232,7 +237,8 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(put.data.get("title"), Some(&serde_json::json!("title")));
+        assert_eq!(put.data.title, "title".to_string());
+        assert_eq!(put.data.body, "body".to_string());
     }
 
     #[ignore = "dont want to ddos jsonplaceholder"]
@@ -241,11 +247,10 @@ mod tests {
         let echo = Echo::configure(None);
 
         let deleted = echo
-            .delete("https://jsonplaceholder.typicode.com/posts/1")
+            .delete::<Post>("https://jsonplaceholder.typicode.com/posts/1")
             .await
             .unwrap();
 
-        assert_eq!(deleted.data, json!({}));
         assert_eq!(deleted.status, 200);
         assert_eq!(deleted.status_text, "OK");
     }

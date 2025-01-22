@@ -1,5 +1,5 @@
 use crate::{Echo, Response};
-use serde_json::Value;
+// use serde_json::Value;
 
 use super::echo_errors::EchoError;
 
@@ -57,11 +57,14 @@ impl Echo {
         request
     }
 
-    async fn parse_response(
+    async fn parse_response<U>(
         &self,
         response: reqwest::Response,
         url: &str,
-    ) -> Result<Response, EchoError> {
+    ) -> Result<Response<U>, EchoError>
+    where
+        U: serde::de::DeserializeOwned,
+    {
         let status = response.status().as_u16();
         let status_text = response
             .status()
@@ -70,7 +73,13 @@ impl Echo {
             .to_string();
         let headers = response.headers().clone();
 
-        let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+        // let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+
+        let data = if response.status().is_success() {
+            response.json::<U>().await? // Deserialize directly to U
+        } else {
+            panic!("Unexpected response body or error for URL: {}", url)
+        };
 
         Ok(Response {
             data,
@@ -82,14 +91,15 @@ impl Echo {
         })
     }
 
-    pub(crate) async fn send_request<T>(
+    pub(crate) async fn send_request<T, U>(
         &self,
         mut request: reqwest::RequestBuilder,
         url: &str,
         body: Option<T>,
-    ) -> Result<Response, EchoError>
+    ) -> Result<Response<U>, EchoError>
     where
         T: serde::Serialize,
+        U: serde::de::DeserializeOwned,
     {
         request = self.apply_headers(request);
         request = self.apply_timeout(request);
