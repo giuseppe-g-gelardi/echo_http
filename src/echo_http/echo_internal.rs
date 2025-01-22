@@ -105,8 +105,6 @@ impl Echo {
 mod tests {
     use super::*;
     use crate::RequestConfig;
-    // use mockito::mock;
-    // use reqwest::header::HeaderMap;
 
     #[test]
     fn test_parse_url() {

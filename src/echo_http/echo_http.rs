@@ -62,7 +62,7 @@ impl Echo {
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);
-    /// let res = echo.get("https://jsonplaceholder.typicode.com/").await?;
+    /// let res = echo.get<Type>("https://jsonplaceholder.typicode.com/").await?;
     /// ```
     pub async fn get<T>(&self, url: &str) -> Result<Response, EchoError> {
         let full_url = self.get_full_url(url);
