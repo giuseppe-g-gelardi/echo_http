@@ -14,28 +14,17 @@ struct Post {
 
 #[tokio::main]
 async fn main() -> Result<(), Err> {
-    // let unknown = get_unknown().await?;
-    // println!("{:#?}", unknown.data);
+    let unknown = echo.get_unknown("https://httpbin.org/get").await?;
+    println!("{:#?}", unknown.data);
 
-    let posts_response = echo
+    let posts = echo
         .get::<Vec<Post>>("https://jsonplaceholder.typicode.com/posts")
-        .await?;
+        .await?
+        .data; // you can chain .data to get the Response.data directly. cool right?
 
-    for post in posts_response.data {
+    for post in posts {
         println!("Title: {}, ID: {}", post.title, post.id)
     }
 
-    // println!("{:#?}", posts_response.data);
-    //
-    // let posts_vec = posts_response.data;
-    // posts_vec.as_array().unwrap().iter().for_each(|post| {
-    //     println!("Title: {}", post.get("title").unwrap());
-    // });
-
     Ok(())
 }
-
-// async fn get_unknown() -> Result<Response, Err> {
-//     let res = echo.get_unknown("https://httpbin.org/get").await?;
-//     Ok(res)
-// }

@@ -1,5 +1,5 @@
+use crate::response::ResponseUnknown;
 use crate::{Echo, Response};
-// use serde_json::Value;
 
 use super::echo_errors::EchoError;
 
@@ -73,8 +73,6 @@ impl Echo {
             .to_string();
         let headers = response.headers().clone();
 
-        // let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
-
         let data = if response.status().is_success() {
             response.json::<U>().await? // Deserialize directly to U
         } else {
@@ -108,6 +106,50 @@ impl Echo {
 
         let response = request.send().await?;
         self.parse_response(response, url).await
+    }
+
+    // quick and dirty implementation for now
+    pub(crate) async fn send_request_unknown<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<ResponseUnknown, EchoError>
+    where
+        T: serde::Serialize,
+        // U: serde::de::DeserializeOwned,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        // self.parse_response(response, url).await
+
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .unwrap_or_else(|_| serde_json::Value::Null);
+
+        Ok(ResponseUnknown {
+            inner: Response {
+                data,
+                status,
+                status_text,
+                headers,
+                config: self.config.clone(),
+                request: self.get_full_url(url),
+            },
+        })
     }
 }
 

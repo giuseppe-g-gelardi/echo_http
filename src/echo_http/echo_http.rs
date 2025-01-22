@@ -1,16 +1,11 @@
 use super::echo_errors::EchoError;
-use crate::{Echo, Nope, RequestConfig, Response};
-// use serde::de::DeserializeOwned;
+use crate::{Echo, Nope, RequestConfig, Response, ResponseUnknown};
 
 impl Echo {
     /// Create an Echo instance with the `configure()` method.
     /// configure takes an Option;
     /// ```rs
-    /// Option<Config>
-    /// ```
-    /// or
-    /// ```rs
-    /// None
+    /// Option<Config> or None
     /// ```
     ///
     /// Configure the Echo instance with an optional base URL
@@ -20,13 +15,13 @@ impl Echo {
     ///     timeout: None,
     ///     headers: None,
     /// };
-    /// ```
     ///
-    /// ```rs
-    /// let config_withurl = Echo::configure(Some(echo_config));```
+    /// let config_withurl = Echo::configure(Some(echo_config));
+    /// ```
     /// or
     /// ```
-    /// let echo = Echo::configure(None);```
+    /// let echo = Echo::configure(None);
+    /// ```
     ///
     /// passing None allows you to send a request to a full url
     /// example:
@@ -45,7 +40,6 @@ impl Echo {
 
     /// get request for an unknown endpoint
     /// ```rs
-    ///
     /// let mut config = RequestConfig::default();
     /// config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
     ///
@@ -53,11 +47,11 @@ impl Echo {
     ///
     /// let response = echo.get_unknown("/users/1").await.unwrap();
     /// ```
-    // pub async fn get_unknown(&self, url: &str) -> Result<Response, EchoError> {
-    //     let full_url = self.get_full_url(url);
-    //     let request = self.client.get(&full_url);
-    //     self.send_request(request, url, Nope).await
-    // }
+    pub async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
+        let full_url = self.get_full_url(url);
+        let request = self.client.get(&full_url);
+        self.send_request_unknown(request, url, Nope).await
+    }
 
     /// get request
     /// ```rs
@@ -93,7 +87,7 @@ impl Echo {
     /// # example:
     /// ```rs
     /// let echo = Echo::configure(None);
-    /// #[derive(Debug, Serialize)]
+    /// #[derive(Debug, Serialize, Deserialize)]
     /// #[serde(rename_all = "camelCase")]
     /// struct Post {
     ///    user_id: u16,
@@ -142,7 +136,6 @@ impl Echo {
 mod tests {
     use crate::Nope;
     use serde::{Deserialize, Serialize};
-    // use serde_json::json;
 
     use super::*;
 
@@ -170,18 +163,18 @@ mod tests {
         assert_eq!(post.user_id, 1);
     }
 
-    // #[ignore = "dont want to ddos jsonplaceholder"]
-    // #[tokio::test]
-    // async fn test_get_unknown() {
-    //     let mut config = RequestConfig::default();
-    //     config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
-    //
-    //     let echo = Echo::configure(Some(config));
-    //
-    //     let response = echo.get_unknown("/users/1").await.unwrap();
-    //
-    //     assert_eq!(response.status_text, "OK")
-    // }
+    #[ignore = "dont want to ddos jsonplaceholder"]
+    #[tokio::test]
+    async fn test_get_unknown() {
+        let mut config = RequestConfig::default();
+        config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
+
+        let echo = Echo::configure(Some(config));
+
+        let response = echo.get_unknown("/users/1").await.unwrap();
+
+        assert_eq!(response.status_text, "OK")
+    }
 
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]

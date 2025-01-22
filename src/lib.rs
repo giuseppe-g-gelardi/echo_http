@@ -4,7 +4,7 @@ pub mod response;
 
 pub use echo_http::Echo;
 pub use request_config::RequestConfig;
-pub use response::Response;
+pub use response::{Response, ResponseUnknown};
 
 use once_cell::sync::Lazy;
 
