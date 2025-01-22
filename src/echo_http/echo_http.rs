@@ -1,4 +1,5 @@
 use crate::{Echo, Nope, RequestConfig, Response};
+// use serde::de::DeserializeOwned;
 
 impl Echo {
     /// Create an Echo instance with the `configure()` method.
@@ -51,6 +52,20 @@ impl Echo {
         let request = self.client.get(&full_url);
         self.send_request(request, url, Nope).await
     }
+
+    // pub async fn get<T>(&self, url: &str) -> Result<T, reqwest::Error>
+    // where
+    //     T: serde::de::DeserializeOwned,
+    // {
+    //     let full_url = self.get_full_url(url);
+    //     let request = self.client.get(&full_url);
+    //
+    //     // Send the request
+    //     let response = self.send_request(request, url, None::<()>).await?;
+    //
+    //     // Deserialize into the desired type
+    //     serde_json::from_value(response.data).map_err(|err| reqwest::Error::from(err))
+    // }
 
     /// post request
     /// # example:

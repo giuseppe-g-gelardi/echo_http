@@ -79,6 +79,7 @@ impl Echo {
             .unwrap_or("")
             .to_string();
         let headers = response.headers().clone();
+
         let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
 
         Ok(Response {
