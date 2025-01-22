@@ -1,3 +1,4 @@
+use super::echo_errors::EchoError;
 use crate::{Echo, Nope, RequestConfig, Response};
 // use serde::de::DeserializeOwned;
 
@@ -42,30 +43,32 @@ impl Echo {
         }
     }
 
-    /// get request
+    /// get request for an unknown endpoint
     /// ```rs
-    /// let echo = Echo::configure(None);
-    /// let res = echo.get("https://jsonplaceholder.typicode.com/").await?;
+    ///
+    /// let mut config = RequestConfig::default();
+    /// config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
+    ///
+    /// let echo = Echo::configure(Some(config));
+    ///
+    /// let response = echo.get_unknown("/users/1").await.unwrap();
     /// ```
-    pub async fn get(&self, url: &str) -> Result<Response, reqwest::Error> {
+    pub async fn get_unknown(&self, url: &str) -> Result<Response, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
         self.send_request(request, url, Nope).await
     }
 
-    // pub async fn get<T>(&self, url: &str) -> Result<T, reqwest::Error>
-    // where
-    //     T: serde::de::DeserializeOwned,
-    // {
-    //     let full_url = self.get_full_url(url);
-    //     let request = self.client.get(&full_url);
-    //
-    //     // Send the request
-    //     let response = self.send_request(request, url, None::<()>).await?;
-    //
-    //     // Deserialize into the desired type
-    //     serde_json::from_value(response.data).map_err(|err| reqwest::Error::from(err))
-    // }
+    /// get request
+    /// ```rs
+    /// let echo = Echo::configure(None);
+    /// let res = echo.get("https://jsonplaceholder.typicode.com/").await?;
+    /// ```
+    pub async fn get<T>(&self, url: &str) -> Result<Response, EchoError> {
+        let full_url = self.get_full_url(url);
+        let request = self.client.get(&full_url);
+        self.send_request(request, url, Nope).await
+    }
 
     /// post request
     /// # example:
@@ -74,7 +77,7 @@ impl Echo {
     ///
     /// let res = echo.post("/users", Nope).await?;
     /// ```
-    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response, reqwest::Error>
+    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response, EchoError>
     where
         T: serde::Serialize,
     {
@@ -105,7 +108,7 @@ impl Echo {
     ///
     /// let put = echo.put::<Post>("https://jsonplaceholder.typicode.com/posts/1", Some(updated_post)).await?;
     /// ```
-    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response, reqwest::Error>
+    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response, EchoError>
     where
         T: serde::Serialize,
     {
@@ -122,7 +125,7 @@ impl Echo {
     /// ```
     /// `response.data` should return an empty object. it will look like this: `Object {}`
     /// but it will be equal to `serde_json::json!({})`
-    pub async fn delete(&self, url: &str) -> Result<Response, reqwest::Error> {
+    pub async fn delete(&self, url: &str) -> Result<Response, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
         self.send_request(request, url, Nope).await
@@ -149,12 +152,27 @@ mod tests {
     #[ignore = "dont want to ddos jsonplaceholder"]
     #[tokio::test]
     async fn test_get() {
+        let echo = Echo::configure(None);
+        let posts = echo
+            .get::<Post>("https://jsonplaceholder.typicode.com/posts/1")
+            .await
+            .unwrap();
+
+        let post = posts.data;
+
+        assert_eq!(post.get("id"), Some(&serde_json::json!(1)));
+        assert_eq!(post.get("userId"), Some(&serde_json::json!(1)));
+    }
+
+    #[ignore = "dont want to ddos jsonplaceholder"]
+    #[tokio::test]
+    async fn test_get_unknown() {
         let mut config = RequestConfig::default();
         config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
 
         let echo = Echo::configure(Some(config));
 
-        let response = echo.get("/users/1").await.unwrap();
+        let response = echo.get_unknown("/users/1").await.unwrap();
 
         assert_eq!(response.status_text, "OK")
     }
@@ -172,7 +190,7 @@ mod tests {
 
         let response = echo
             .post::<Post>(
-                "https://jsonplaceholder.typicode.com/users/",
+                "https://jsonplaceholder.typicode.com/posts/",
                 Some(new_post),
             )
             .await

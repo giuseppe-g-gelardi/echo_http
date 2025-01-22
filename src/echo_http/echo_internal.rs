@@ -1,6 +1,8 @@
 use crate::{Echo, Response};
 use serde_json::Value;
 
+use super::echo_errors::EchoError;
+
 impl Echo {
     /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
@@ -61,7 +63,7 @@ impl Echo {
         mut request: reqwest::RequestBuilder,
         url: &str,
         body: Option<T>,
-    ) -> Result<Response, reqwest::Error>
+    ) -> Result<Response, EchoError>
     where
         T: serde::Serialize,
     {
