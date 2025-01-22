@@ -4,7 +4,6 @@ use serde_json::Value;
 use super::echo_errors::EchoError;
 
 impl Echo {
-    /// method to parse leading and or trailing slashes from the url
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
@@ -99,25 +98,48 @@ impl Echo {
 
         let response = request.send().await?;
         self.parse_response(response, url).await
+    }
+}
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::RequestConfig;
+    // use mockito::mock;
+    // use reqwest::header::HeaderMap;
 
-        // let status = response.status().as_u16();
-        // let status_text = response
-        //     .status()
-        //     .canonical_reason()
-        //     .unwrap_or("")
-        //     .to_string();
-        // let headers = response.headers().clone();
-        //
-        // let data: Value = response.json().await.unwrap_or_else(|_| Value::Null);
+    #[test]
+    fn test_parse_url() {
+        assert_eq!(Echo::parse_url("/endpoint/"), "endpoint");
+        assert_eq!(Echo::parse_url("endpoint/"), "endpoint");
+        assert_eq!(Echo::parse_url("/endpoint"), "endpoint");
+        assert_eq!(Echo::parse_url("endpoint"), "endpoint");
+    }
 
-        // Ok(Response {
-        //     data,
-        //     status,
-        //     status_text,
-        //     headers,
-        //     config: self.config.clone(),
-        //     request: self.get_full_url(url),
-        // })
+    #[test]
+    fn test_get_full_url_with_base_url() {
+        let config = RequestConfig {
+            base_url: Some("https://api.example.com".to_string()),
+            ..Default::default()
+        };
+        let echo = Echo::configure(Some(config));
+
+        assert_eq!(
+            echo.get_full_url("/endpoint"),
+            "https://api.example.com/endpoint"
+        );
+        assert_eq!(
+            echo.get_full_url("endpoint/"),
+            "https://api.example.com/endpoint"
+        );
+    }
+
+    #[test]
+    fn test_get_full_url_without_base_url() {
+        let echo = Echo::configure(None);
+        assert_eq!(
+            echo.get_full_url("https://api.example.com/endpoint"),
+            "https://api.example.com/endpoint"
+        );
     }
 }
