@@ -58,9 +58,9 @@ impl Echo {
     /// let echo = Echo::configure(None);
     /// let res = echo.get<Type>("https://jsonplaceholder.typicode.com/").await?;
     /// ```
-    pub async fn get<U>(&self, url: &str) -> Result<Response<U>, EchoError>
+    pub async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
-        U: serde::Serialize + serde::de::DeserializeOwned,
+        T: serde::Serialize + serde::de::DeserializeOwned,
     {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
@@ -122,9 +122,9 @@ impl Echo {
     /// ```
     /// `response.data` should return an empty object. it will look like this: `Object {}`
     /// but it will be equal to `serde_json::json!({})`
-    pub async fn delete<U>(&self, url: &str) -> Result<Response<U>, EchoError>
+    pub async fn delete<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
-        U: serde::de::DeserializeOwned,
+        T: serde::de::DeserializeOwned,
     {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);

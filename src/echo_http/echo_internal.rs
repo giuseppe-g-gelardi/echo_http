@@ -57,13 +57,13 @@ impl Echo {
         request
     }
 
-    async fn parse_response<U>(
+    async fn parse_response<T>(
         &self,
         response: reqwest::Response,
         url: &str,
-    ) -> Result<Response<U>, EchoError>
+    ) -> Result<Response<T>, EchoError>
     where
-        U: serde::de::DeserializeOwned,
+        T: serde::de::DeserializeOwned,
     {
         let status = response.status().as_u16();
         let status_text = response
@@ -74,7 +74,7 @@ impl Echo {
         let headers = response.headers().clone();
 
         let data = if response.status().is_success() {
-            response.json::<U>().await? // Deserialize directly to U
+            response.json::<T>().await? // Deserialize directly to U
         } else {
             panic!("Unexpected response body or error for URL: {}", url)
         };
