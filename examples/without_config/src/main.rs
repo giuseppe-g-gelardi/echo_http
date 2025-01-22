@@ -20,7 +20,7 @@ async fn main() -> Result<(), Err> {
     let posts = echo
         .get::<Vec<Post>>("https://jsonplaceholder.typicode.com/posts")
         .await?
-        .data; // you can chain .data to get the Response.data directly. cool right?
+        .data; // you can chain .data to get the Response.data directly. cool, right?
 
     for post in posts {
         println!("Title: {}, ID: {}", post.title, post.id)

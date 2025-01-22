@@ -7,9 +7,9 @@ license = "MIT"
 description = "Axios like http client for the typescipt devs that just can't let go"
 homepage = "https://github.com/giuseppe-g-gelardi/echo-http"
 repository = "https://github.com/giuseppe-g-gelardi/echo-http"
-documentation = "TODO: https://docs.rs/cargobase"
+documentation = "https://docs.rs/echo_http"
 readme = "README.md"
-keywords = ["http", "client", "axios"]
+keywords = ["http", "client", "axios", "reqwest", "serde"]
 categories = ["networking", "http", "utilities", "web", "client"]
 
 [dependencies]
@@ -21,7 +21,6 @@ thiserror = "2.0.11"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
-
 
 [lib]
 path = "src/lib.rs"

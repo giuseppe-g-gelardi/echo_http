@@ -1,8 +1,5 @@
 pub mod response;
 
-// use reqwest::header::HeaderMap;
-// use serde_json::Value;
-
 use std::ops::Deref;
 
 use crate::RequestConfig;
