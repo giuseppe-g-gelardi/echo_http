@@ -74,7 +74,7 @@ impl Echo {
         let headers = response.headers().clone();
 
         let data = if response.status().is_success() {
-            response.json::<T>().await? // Deserialize directly to U
+            response.json::<T>().await? // Deserialize directly to T
         } else {
             panic!("Unexpected response body or error for URL: {}", url)
         };
@@ -125,7 +125,6 @@ impl Echo {
         request = self.apply_params(request);
 
         let response = request.send().await?;
-        // self.parse_response(response, url).await
 
         let status = response.status().as_u16();
         let status_text = response

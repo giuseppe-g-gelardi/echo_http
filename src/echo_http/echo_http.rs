@@ -6,7 +6,7 @@ impl Echo {
     /// configure takes an Option;
     /// ```rs
     /// Option<Config> or None
-    /// 
+    ///
     /// Configure the Echo instance with an optional base URL
     ///
     /// let echo_config = Config {
@@ -117,14 +117,20 @@ impl Echo {
     /// ```
     /// `response.data` should return an empty object. it will look like this: `Object {}`
     /// but it will be equal to `serde_json::json!({})`
-    pub async fn delete<T>(&self, url: &str) -> Result<Response<T>, EchoError>
-    where
-        T: serde::de::DeserializeOwned,
-    {
+    pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
-        self.send_request(request, url, Nope).await
+        self.send_request_unknown(request, url, Nope).await
     }
+    // pub async fn delete<T>(&self, url: &str) -> Result<Response<T>, EchoError>
+    // where
+    //     T: serde::de::DeserializeOwned,
+    // {
+    //     let full_url = self.get_full_url(url);
+    //     let request = self.client.delete(&full_url);
+    //     self.send_request(request, url, Nope).await
+    // }
+
 }
 
 #[cfg(test)]
@@ -235,7 +241,7 @@ mod tests {
         let echo = Echo::configure(None);
 
         let deleted = echo
-            .delete::<Post>("https://jsonplaceholder.typicode.com/posts/1")
+            .delete("https://jsonplaceholder.typicode.com/posts/1")
             .await
             .unwrap();
 
