@@ -107,26 +107,9 @@ impl Echo {
         self.parse_response(response, url).await
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     // unknown aka serde_json::Value
     // quick and dirty implementation for now
-    pub(crate) async fn send_request_unknown<T>(
-        &self,
-        mut request: reqwest::RequestBuilder,
-        url: &str,
-        body: Option<T>,
-    ) -> Result<ResponseUnknown, EchoError>
-    where
-        T: serde::Serialize,
-    {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-        self.parse_response_unknown(response, url).await
-    }
-
     async fn parse_response_unknown(
         &self,
         response: reqwest::Response,
@@ -155,6 +138,24 @@ impl Echo {
                 request: self.get_full_url(url),
             },
         })
+    }
+
+    pub(crate) async fn send_request_unknown<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<ResponseUnknown, EchoError>
+    where
+        T: serde::Serialize,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response_unknown(response, url).await
     }
 }
 

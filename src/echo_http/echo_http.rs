@@ -118,8 +118,7 @@ impl Echo {
     /// let echo = Echo::configure(None);
     /// let deleted = echo.delete("https://jsonplaceholder.typicode.com/posts/1").await?;
     /// ```
-    /// `response.data` should return an empty object. it will look like this: `Object {}`
-    /// but it will be equal to `serde_json::json!({})`
+    /// `response.data` should return an empty object.
     pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
