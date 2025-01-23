@@ -89,7 +89,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+* post requets 
+```rs
+#[tokio::main]
+async fn main() -> Result<(), Err> {
+    let echo = Echo::configure(Some(/* set base_url */));
+
+    let new_post = Post {
+        user_id: 1,
+        id: 1,
+        title: "post title".to_string(),
+        body: "compelling post body".to_string(),
+    };
+
+    // since the base_url is already set, we can just add the endpoint here
+    let res = echo.post::<Post>("posts", Some(new_post)).await?;
+    println!("{:#?}", res);
+
+    Ok(())
+}
+```
+
 ### yes. i know all the examples thus far are get requests.
-* TODO: examples with post, put and delete
+* TODO: examples with put and delete
 
 ##### contributing: if you want to?
