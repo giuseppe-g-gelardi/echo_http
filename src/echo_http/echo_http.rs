@@ -63,7 +63,6 @@ impl Echo {
     }
 
     /// post request
-    /// # example:
     /// ```rs
     /// let echo = Echo::configure(config{...});
     ///
@@ -79,7 +78,6 @@ impl Echo {
     }
 
     /// put request
-    /// # example:
     /// ```rs
     /// let echo = Echo::configure(None);
     /// #[derive(Debug, Serialize, Deserialize)]
@@ -110,7 +108,6 @@ impl Echo {
     }
 
     /// delete request
-    /// # example
     /// ```rs
     /// let echo = Echo::configure(None);
     /// let deleted = echo.delete("https://jsonplaceholder.typicode.com/posts/1").await?;
@@ -122,15 +119,6 @@ impl Echo {
         let request = self.client.delete(&full_url);
         self.send_request_unknown(request, url, Nope).await
     }
-    // pub async fn delete<T>(&self, url: &str) -> Result<Response<T>, EchoError>
-    // where
-    //     T: serde::de::DeserializeOwned,
-    // {
-    //     let full_url = self.get_full_url(url);
-    //     let request = self.client.delete(&full_url);
-    //     self.send_request(request, url, Nope).await
-    // }
-
 }
 
 #[cfg(test)]
