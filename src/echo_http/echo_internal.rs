@@ -38,7 +38,6 @@ impl Echo {
     fn apply_params(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
         if let Some(params) = &self.config.params {
             request = request.query(params);
-            // todo! implement parsing for params
         }
         request
     }
@@ -74,7 +73,7 @@ impl Echo {
         let headers = response.headers().clone();
 
         let data = if response.status().is_success() {
-            response.json::<T>().await? // Deserialize directly to U
+            response.json::<T>().await? // Deserialize directly to T
         } else {
             panic!("Unexpected response body or error for URL: {}", url)
         };
@@ -108,25 +107,14 @@ impl Echo {
         self.parse_response(response, url).await
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // unknown aka serde_json::Value
     // quick and dirty implementation for now
-    pub(crate) async fn send_request_unknown<T>(
+    async fn parse_response_unknown(
         &self,
-        mut request: reqwest::RequestBuilder,
+        response: reqwest::Response,
         url: &str,
-        body: Option<T>,
-    ) -> Result<ResponseUnknown, EchoError>
-    where
-        T: serde::Serialize,
-        // U: serde::de::DeserializeOwned,
-    {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-        // self.parse_response(response, url).await
-
+    ) -> Result<ResponseUnknown, EchoError> {
         let status = response.status().as_u16();
         let status_text = response
             .status()
@@ -150,6 +138,24 @@ impl Echo {
                 request: self.get_full_url(url),
             },
         })
+    }
+
+    pub(crate) async fn send_request_unknown<T>(
+        &self,
+        mut request: reqwest::RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<ResponseUnknown, EchoError>
+    where
+        T: serde::Serialize,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response_unknown(response, url).await
     }
 }
 

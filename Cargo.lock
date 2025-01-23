@@ -1492,6 +1492,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
+name = "with_config"
+version = "0.1.0"
+dependencies = [
+ "echo_http",
+ "reqwest",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "without_config"
 version = "0.1.0"
 dependencies = [

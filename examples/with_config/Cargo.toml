@@ -1,0 +1,10 @@
+[package]
+name = "with_config"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+echo_http = { path = "../../" } # Reference your crate
+tokio = { version = "1", features = ["full"] } # Add dependencies if needed
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json"] }
