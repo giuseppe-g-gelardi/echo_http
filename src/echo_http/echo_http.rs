@@ -7,9 +7,15 @@ impl Echo {
     /// ```rs
     /// Option<Config> or None
     ///
-    /// Configure the Echo instance with an optional base URL
+    /// Configure the Echo instance a few different ways
+    /// # mutable:
+    /// let mut config = RequestConfig::default();
+    /// config.base_url = Some("https://jsonplaceholder.typicode.com/posts/1".to_string());
     ///
-    /// let echo_config = Config {
+    /// let echo = Echo::configure(Some(config));
+    ///
+    /// # static:
+    /// let echo_config = RequestConfig {
     ///     base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
     ///     timeout: None,
     ///     headers: None,
@@ -51,7 +57,7 @@ impl Echo {
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);
-    /// let res = echo.get<Type>("https://jsonplaceholder.typicode.com/").await?;
+    /// let res = echo.get::<T>("https://jsonplaceholder.typicode.com/").await?;
     /// ```
     pub async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
@@ -64,9 +70,9 @@ impl Echo {
 
     /// post request
     /// ```rs
-    /// let echo = Echo::configure(config{...});
+    /// let echo = Echo::configure(...);
     ///
-    /// let res = echo.post("/users", Nope).await?;
+    /// let res = echo.post::<T>("/users", Nope).await?;
     /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where

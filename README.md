@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Do you require a little more control?
 * instantiate a config and update it
 ```rs
-use echo_http::{Echo, Response};
+use echo_http::Echo;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -58,6 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert("Content-Type", "application/json".parse().unwrap());
     headers.insert("Authorization", "Bearer token".parse().unwrap());
+    echo.headers = Some(headers.clone());
 
     let posts = echo
         .get<Vec<Post>>("https://jsonplaceholder.typicode.com/posts")
