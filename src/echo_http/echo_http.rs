@@ -6,15 +6,13 @@ impl Echo {
     /// configure takes an Option;
     /// ```rs
     /// Option<Config> or None
-    /// 
-    /// Configure the Echo instance with an optional base URL
     ///
-    /// let echo_config = Config {
-    ///     base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
-    ///     timeout: None,
-    ///     headers: None,
-    /// };
-    /// let config_withurl = Echo::configure(Some(echo_config));
+    /// Configure the Echo instance a few different ways
+    /// 
+    /// let mut config = RequestConfig::default();
+    /// config.base_url = Some("https://jsonplaceholder.typicode.com/posts/1".to_string());
+    ///
+    /// let echo = Echo::configure(Some(config));
     ///
     /// or
     ///
@@ -51,7 +49,7 @@ impl Echo {
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);
-    /// let res = echo.get<Type>("https://jsonplaceholder.typicode.com/").await?;
+    /// let res = echo.get::<T>("https://jsonplaceholder.typicode.com/").await?;
     /// ```
     pub async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
@@ -63,11 +61,12 @@ impl Echo {
     }
 
     /// post request
-    /// # example:
     /// ```rs
-    /// let echo = Echo::configure(config{...});
+    /// let echo = Echo::configure(...);
     ///
-    /// let res = echo.post("/users", Nope).await?;
+    /// let res = echo.post::<T>("/users", Nope).await?;
+    ///
+    /// let res = echo.post::<User>("/users", Some(new_user)).await?;
     /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
@@ -79,7 +78,6 @@ impl Echo {
     }
 
     /// put request
-    /// # example:
     /// ```rs
     /// let echo = Echo::configure(None);
     /// #[derive(Debug, Serialize, Deserialize)]
@@ -110,20 +108,15 @@ impl Echo {
     }
 
     /// delete request
-    /// # example
     /// ```rs
     /// let echo = Echo::configure(None);
     /// let deleted = echo.delete("https://jsonplaceholder.typicode.com/posts/1").await?;
     /// ```
-    /// `response.data` should return an empty object. it will look like this: `Object {}`
-    /// but it will be equal to `serde_json::json!({})`
-    pub async fn delete<T>(&self, url: &str) -> Result<Response<T>, EchoError>
-    where
-        T: serde::de::DeserializeOwned,
-    {
+    /// `response.data` should return an empty object.
+    pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
-        self.send_request(request, url, Nope).await
+        self.send_request_unknown(request, url, Nope).await
     }
 }
 
@@ -235,7 +228,7 @@ mod tests {
         let echo = Echo::configure(None);
 
         let deleted = echo
-            .delete::<Post>("https://jsonplaceholder.typicode.com/posts/1")
+            .delete("https://jsonplaceholder.typicode.com/posts/1")
             .await
             .unwrap();
 

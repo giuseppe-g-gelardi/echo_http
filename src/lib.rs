@@ -8,26 +8,22 @@ pub use response::{Response, ResponseUnknown};
 
 use once_cell::sync::Lazy;
 
-/// Optional value `Nope`
 /// ```rs
-/// Option<()> = None;
-/// ```
-/// to circimvent passing
-/// ```rs
-/// None::<()>
-/// ```
-/// into a post request
+/// Optional value `Nope` = Option<()> = None;
+///
+/// to circimvent passing `None::<()>` into a post request
 /// with no body/data
+/// ```
 #[allow(non_upper_case_globals)]
 pub const Nope: Option<()> = None;
 
-/// Default instance, quickly start making https requests without setting up
-/// a default configuration.
-/// # example:
 /// ```rs
+/// Default instance, quickly start making https requests without setting up
+///
 /// let res = echo.get("url").await?;
-/// ```
+///
 /// works with get, post, put and delete however if you require more granular control,
 /// it is suggested to setup your `RequestConfig`
+/// ```
 #[allow(non_upper_case_globals)]
 pub static echo: Lazy<Echo> = Lazy::new(|| Echo::configure(None));
