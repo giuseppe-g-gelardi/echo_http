@@ -38,7 +38,6 @@ impl Echo {
     fn apply_params(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
         if let Some(params) = &self.config.params {
             request = request.query(params);
-            // todo! implement parsing for params
         }
         request
     }
@@ -108,6 +107,7 @@ impl Echo {
         self.parse_response(response, url).await
     }
 
+    // unknown aka serde_json::Value
     // quick and dirty implementation for now
     pub(crate) async fn send_request_unknown<T>(
         &self,
@@ -117,7 +117,6 @@ impl Echo {
     ) -> Result<ResponseUnknown, EchoError>
     where
         T: serde::Serialize,
-        // U: serde::de::DeserializeOwned,
     {
         request = self.apply_headers(request);
         request = self.apply_timeout(request);
@@ -125,7 +124,14 @@ impl Echo {
         request = self.apply_params(request);
 
         let response = request.send().await?;
+        self.parse_response_unknown(response, url).await
+    }
 
+    async fn parse_response_unknown(
+        &self,
+        response: reqwest::Response,
+        url: &str,
+    ) -> Result<ResponseUnknown, EchoError> {
         let status = response.status().as_u16();
         let status_text = response
             .status()
