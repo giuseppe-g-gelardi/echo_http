@@ -38,7 +38,7 @@ impl Echo {
     ///
     /// let echo = Echo::configure(Some(config));
     ///
-    /// let response = echo.get_unknown("/users/1").await.unwrap();
+    /// let response = echo.get_unknown("/users/1").await?;
     /// ```
     pub async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);

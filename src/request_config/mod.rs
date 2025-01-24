@@ -1,9 +1,10 @@
 pub mod request_config;
 
-use reqwest::header::HeaderMap;
 use reqwest::Method;
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::headers::Headers;
 
 /// Request Configuration
 /// `url` is the server URL that will be used for the request
@@ -19,7 +20,7 @@ pub struct RequestConfig {
     pub url: Option<String>,
     pub method: Method, // 'GET' is the default
     pub base_url: Option<String>,
-    pub headers: Option<HeaderMap>,
+    pub headers: Option<Headers>,
     pub params: Option<HashMap<String, String>>,
     pub data: Option<Value>,
     pub timeout: Option<u64>,

@@ -1,4 +1,4 @@
-use echo_http::{Echo, RequestConfig};
+use echo_http::{Echo, Headers, RequestConfig};
 use serde::{Deserialize, Serialize};
 
 type Err = Box<dyn std::error::Error>;
@@ -15,13 +15,22 @@ struct Post {
 #[tokio::main]
 async fn main() -> Result<(), Err> {
     let mut echo_config = RequestConfig::default();
-    let mut headers = reqwest::header::HeaderMap::new();
+    let mut headers = Headers::new();
 
     // set base_url
     echo_config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
 
-    // set headers
-    headers.insert("Content-Type", "application/json".parse().unwrap());
+    // set headers individually
+    headers.insert("Content-Type: application/json");
+
+    // set headers with insert_many
+    headers.insert_many(vec![
+        "Authorization: Bearer token",
+        "X-Api-Key: secret",
+        "X-Api-Version: 1",
+    ]);
+
+    // set headers in echo_config
     echo_config.headers = Some(headers);
 
     // create echo instance
