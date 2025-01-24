@@ -1,14 +1,14 @@
 use super::echo_errors::EchoError;
 use crate::{Echo, Nope, RequestConfig, Response, ResponseUnknown};
 
-impl Echo {
+impl<'a> Echo<'a> {
     /// Create an Echo instance with the `configure()` method.
     /// configure takes an Option;
     /// ```rs
     /// Option<Config> or None
     ///
     /// Configure the Echo instance a few different ways
-    /// 
+    ///
     /// let mut config = RequestConfig::default();
     /// config.base_url = Some("https://jsonplaceholder.typicode.com/posts/1".to_string());
     ///
@@ -22,7 +22,7 @@ impl Echo {
     /// let res = echo.get("https://jsonplaceholder.typicode.com/users/1")
     /// ```
     ///
-    pub fn configure(config: Option<RequestConfig>) -> Self {
+    pub fn configure(config: Option<RequestConfig<'a>>) -> Self {
         let config = config.unwrap_or_default();
 
         Echo {

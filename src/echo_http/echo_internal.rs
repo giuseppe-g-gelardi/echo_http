@@ -3,7 +3,7 @@ use crate::{Echo, Response};
 
 use super::echo_errors::EchoError;
 
-impl Echo {
+impl<'a> Echo<'a> {
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 

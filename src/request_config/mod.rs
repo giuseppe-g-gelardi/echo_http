@@ -16,11 +16,11 @@ use crate::headers::Headers;
 /// `data` is the data to be sent as the request body.
 /// `timeout` specifies the number of milliseconds before the request times out. If the request takes longer than `timeout`, the request will be aborted.
 #[derive(Debug, Clone)]
-pub struct RequestConfig {
+pub struct RequestConfig<'a> {
     pub url: Option<String>,
     pub method: Method, // 'GET' is the default
     pub base_url: Option<String>,
-    pub headers: Option<Headers>,
+    pub headers: Option<Headers<'a>>,
     pub params: Option<HashMap<String, String>>,
     pub data: Option<Value>,
     pub timeout: Option<u64>,

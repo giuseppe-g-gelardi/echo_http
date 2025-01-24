@@ -4,7 +4,7 @@ use reqwest::header::HeaderMap;
 use std::collections::HashMap;
 
 /// A struct for managing headers.
-impl Headers {
+impl<'a> Headers<'a> {
     /// Creates a new `Headers` instance.
     pub fn new() -> Self {
         Headers {
@@ -18,10 +18,9 @@ impl Headers {
     ///
     /// let mut headers = Headers::new();
     /// headers.insert("Content-Type: application/json");
-    pub fn insert(&mut self, header: &str) {
+    pub fn insert(&mut self, header: &'a str) {
         if let Some((key, value)) = header.split_once(':') {
-            self.headers
-                .insert(key.trim().to_string(), value.trim().to_string());
+            self.headers.insert(key.trim(), value.trim());
         } else {
             panic!("Header must be in the format 'key: value'");
         }
@@ -38,7 +37,7 @@ impl Headers {
     ///    "Authorization: Bearer token",
     ///    "X-Api-Key: secret",
     /// ]);
-    pub fn insert_many(&mut self, headers: Vec<&str>) {
+    pub fn insert_many(&mut self, headers: Vec<&'a str>) {
         for header in headers {
             self.insert(header);
         }
@@ -58,7 +57,7 @@ impl Headers {
 }
 
 /// Automatically convert `Headers` into `reqwest::header::HeaderMap`.
-impl Into<HeaderMap> for Headers {
+impl Into<HeaderMap> for Headers<'_> {
     fn into(self) -> HeaderMap {
         self.to_header_map()
     }
@@ -75,7 +74,7 @@ mod tests {
 
         assert_eq!(
             headers.headers.get("Content-Type"),
-            Some(&"application/json".to_string())
+            Some(&"application/json")
         );
     }
 
@@ -89,12 +88,9 @@ mod tests {
 
         assert_eq!(
             headers.headers.get("Content-Type"),
-            Some(&"application/json".to_string())
+            Some(&"application/json")
         );
-        assert_eq!(
-            headers.headers.get("Authorization"),
-            Some(&"Bearer token".to_string())
-        );
+        assert_eq!(headers.headers.get("Authorization"), Some(&"Bearer token"));
     }
 
     #[test]
