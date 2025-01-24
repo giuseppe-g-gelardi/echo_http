@@ -17,6 +17,8 @@ impl Default for RequestConfig {
 
 #[cfg(test)]
 mod tests {
+    use crate::headers::Headers;
+
     use super::*;
 
     #[test]
@@ -54,9 +56,9 @@ mod tests {
     #[test]
     fn test_update_headers() {
         let mut config = RequestConfig::default();
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert("Content-Type", "application/json".parse().unwrap());
-        headers.insert("Authorization", "Bearer token".parse().unwrap());
+        let mut headers = Headers::new();
+        headers.insert("Content-Type: application/json");
+        headers.insert("Authorization: Bearer token");
         config.headers = Some(headers.clone());
 
         assert_eq!(config.headers, Some(headers));
