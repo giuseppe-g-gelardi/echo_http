@@ -9,16 +9,28 @@
 - Generic response deserialization
 
 ## Getting started
-* In addition to echo_http, you need an async runtime. I suggest tokio.
-* it is suggested to also use reqwest as some functionality, like HeaderMaps, require it. 
-* You will also very likely need serde to serialize/deserialize
+
+### Requirements
+
+- An **async runtime** (e.g., [tokio](https://tokio.rs/)).
+- `serde` for data serialization/deserialization.
+- Optional: `reqwest` if you need advanced features not provided by `echo_http` directly.
+
+### Installation
+```toml
+[dependencies]
+echo_http = "0.1"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+# reqwest = { version = "0.12", features = ["json"] }
+```
 
 ## Example Usage
 
 ### In a hurry?
 just use `echo_http::echo;`
 * This is a static default instance. No need to configure anything, just bring into scope and go!
-* works with (as of now) get, post, put and delete
+* works with all supported methods: get, post, put and delete
 ```rs
 use echo_http::echo;
 
@@ -30,9 +42,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### Managing Headers with the `Headers` API
+* The `Headers` struct offers a user-friendly way to manage request headers without working directly with `reqwest::HeaderMap`.
+
+#### Inserting headers:
+```rs
+use echo_http::{Headers, Echo, RequestConfig};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut headers = Headers::new();
+    headers.insert("Content-Type: application/json");
+    headers.insert("Authorization: Bearer token");
+
+    let mut echo_config = RequestConfig::default();
+    echo_config.headers = Some(headers);
+
+    {........}
+}
+```
+
+#### Inserting multiple headers:
+```rs
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut headers = Headers::new();
+    headers.insert_many(vec![
+        "Content-Type: application/json",
+        "Authorization: Bearer token",
+    ]);
+
+    let mut echo_config = RequestConfig::default();
+    echo_config.headers = Some(headers);
+
+    {........}
+}
+
+```
+
 ### Have no idea what data type youre expecting?
-* use the `get_unknown()` method. This method does not take a type argument and returns a serde_json::Value in place of echo_http::Response.data / Response<T>. I'm probably not explaining this correctly, forgive me.
-* Only supports GET requests
+* if the response type is unclear, use `get_unknown` to retreive a `serde_json::Value`
+* *Only supports GET requests at this time. 
 ```rs
 use echo_http::echo;
 
@@ -53,11 +103,13 @@ use echo_http::Echo;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // your instance mut be mutable if you intend to update your config
+    // your instance must be mutable if you intend to update your config
     let mut echo = Echo::configure(None);
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert("Content-Type", "application/json".parse().unwrap());
-    headers.insert("Authorization", "Bearer token".parse().unwrap());
+    let mut headers = Headers::new();
+    headers.insert_many(vec![
+        "Content-Type: application/json",
+        "Authorization: Bearer token",
+    ]);
     echo.headers = Some(headers.clone());
 
     let posts = echo
@@ -91,6 +143,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 * post requets 
 ```rs
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct Post {
+    user_id: u32,
+    id: u32,
+    title: String,
+    body: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Err> {
     let echo = Echo::configure(Some(/* set base_url */));
@@ -110,7 +170,44 @@ async fn main() -> Result<(), Err> {
 }
 ```
 
-### yes. i know all the examples thus far are get requests.
-* TODO: examples with put and delete
+* put example
+```rs
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct Post {
+    user_id: u32,
+    id: u32,
+    title: String,
+    body: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Err> {
+    let echo = Echo::configure(Some(/* set base_url */));
+
+    let updated_post = Post {
+        user_id: 1,
+        id: 1,
+        title: "updated post title".to_string(),
+        body: "compelling post body with the classic reddit *edit:".to_string(),
+    };
+
+    // since the base_url is already set, we can just add the endpoint here
+    let res = echo.post::<Post>("posts", Some(updated_post)).await?;
+    println!("{:#?}", res);
+
+    Ok(())
+}
+```
+
+* delete example - does not take a type argument
+```rs
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let echo = Echo::configure(None);
+    let res = echo.delete("https://jsonplaceholder.typicode.com/posts/1").await?;
+    println!("{:#?}", res);
+    Ok(())
+}
+```
 
 ##### contributing: if you want to?

@@ -20,15 +20,9 @@ impl Echo {
     }
 
     fn apply_headers(&self, mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
-        // if let Some(headers) = &self.config.headers {
-        //     for (key, value) in headers {
-        //         request = request.header(key, value);
-        //     }
-        // }
-        // request
         if let Some(headers) = &self.config.headers {
             let header_map: reqwest::header::HeaderMap = headers.clone().into();
-                request = request.headers(header_map);
+            request = request.headers(header_map);
         }
         request
     }
