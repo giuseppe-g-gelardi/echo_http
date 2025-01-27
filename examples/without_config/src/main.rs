@@ -35,12 +35,12 @@ async fn main() -> Result<(), Err> {
     Ok(())
 }
 
-async fn get_unknown() -> Result<ResponseUnknown, Err> {
+async fn get_unknown<'a>() -> Result<ResponseUnknown<'a>, Err> {
     let unknown = echo.get_unknown("https://httpbin.org/get").await?;
     Ok(unknown)
 }
 
-async fn get() -> Result<Response<Vec<Post>>, Err> {
+async fn get<'a>() -> Result<Response<'a, Vec<Post>>, Err> {
     let posts = echo
         .get::<Vec<Post>>("https://jsonplaceholder.typicode.com/posts")
         .await?;
@@ -48,7 +48,7 @@ async fn get() -> Result<Response<Vec<Post>>, Err> {
     Ok(posts)
 }
 
-async fn post() -> Result<Response<Post>, Err> {
+async fn post<'a>() -> Result<Response<'a, Post>, Err> {
     let new_post = Post {
         user_id: 1,
         id: 1,
@@ -63,7 +63,7 @@ async fn post() -> Result<Response<Post>, Err> {
     Ok(posted)
 }
 
-async fn put() -> Result<Response<Post>, Err> {
+async fn put<'a>() -> Result<Response<'a, Post>, Err> {
     let updated_post = Post {
         user_id: 1,
         id: 1,
@@ -81,7 +81,7 @@ async fn put() -> Result<Response<Post>, Err> {
     Ok(put)
 }
 
-async fn delete() -> Result<ResponseUnknown, Err> {
+async fn delete<'a>() -> Result<ResponseUnknown<'a>, Err> {
     let deleted = echo
         .delete("https://jsonplaceholder.typicode.com/posts/1")
         .await?;
