@@ -8,7 +8,7 @@ impl<'a> Default for RequestConfig<'a> {
             url: None,
             method: Method::GET,
             base_url: None,
-            timeout: Some(1000),
+            timeout: Some(0),
             headers: None,
             params: None,
             data: None,
@@ -28,7 +28,7 @@ mod tests {
         assert_eq!(config.url, None);
         assert_eq!(config.method, Method::GET);
         assert_eq!(config.base_url, None);
-        assert_eq!(config.timeout, Some(1000));
+        assert_eq!(config.timeout, Some(0));
         assert_eq!(config.headers, None);
         assert_eq!(config.params, None);
         assert_eq!(config.data, None);
