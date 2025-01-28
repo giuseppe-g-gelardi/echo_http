@@ -1,5 +1,5 @@
-use super::echo_errors::EchoError;
-use crate::{Echo, Nope, RequestConfig, Response, ResponseUnknown};
+use crate::{Echo, Nope, RequestConfig, Response, ResponseUnknown, EchoError};
+
 
 impl<'a> Echo<'a> {
     /// Create an Echo instance with the `configure()` method.

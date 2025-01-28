@@ -49,4 +49,38 @@ pub struct RequestConfig<'a> {
 
     // `undefined` (default) - set XSRF header only for the same origin requests
     //with_xsrf_token: Option<bool>, // withXSRFToken: boolean | undefined | ((config: Internalecho_httpRequestConfig) => boolean | undefined),
+    //
+    //
+    /// `responseType` indicates the type of data that the server will respond with
+    /// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+    ///   browser only: 'blob'
+    pub response_type: ResponseType, // default is JSON
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResponseType {
+    ArrayBuffer,
+    Document,
+    Json,
+    Text,
+    Stream,
+    #[cfg(target_arch = "wasm32")] // only for browser environments
+    Blob,
+}
+
+impl std::str::FromStr for ResponseType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "arraybuffer" => Ok(ResponseType::ArrayBuffer),
+            "document" => Ok(ResponseType::Document),
+            "json" => Ok(ResponseType::Json),
+            "text" => Ok(ResponseType::Text),
+            "stream" => Ok(ResponseType::Stream),
+            #[cfg(target_arch = "wasm32")]
+            "blob" => Ok(ResponseType::Blob),
+            _ => Err(format!("Invalid response type: {}", s)),
+        }
+    }
 }

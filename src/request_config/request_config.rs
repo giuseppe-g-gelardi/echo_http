@@ -1,5 +1,4 @@
-
-use super::RequestConfig;
+use super::{RequestConfig, ResponseType};
 use reqwest::Method;
 
 impl<'a> Default for RequestConfig<'a> {
@@ -12,6 +11,7 @@ impl<'a> Default for RequestConfig<'a> {
             headers: None,
             params: None,
             data: None,
+            response_type: ResponseType::Json,
         }
     }
 }
@@ -32,6 +32,7 @@ mod tests {
         assert_eq!(config.headers, None);
         assert_eq!(config.params, None);
         assert_eq!(config.data, None);
+        assert_eq!(config.response_type, ResponseType::Json);
     }
 
     #[test]
@@ -41,9 +42,10 @@ mod tests {
         config.method = Method::POST;
         config.base_url = Some("https://api.example.com".to_string());
         config.timeout = Some(2000);
-        config.headers = None;
-        config.params = None;
-        config.data = None;
+        ..RequestConfig::default();
+        // config.headers = None;
+        // config.params = None;
+        // config.data = None;
 
         assert_eq!(config.url, Some("https://api.example.com".to_string()));
         assert_eq!(config.method, Method::POST);
@@ -63,5 +65,31 @@ mod tests {
         config.headers = Some(headers.clone());
 
         assert_eq!(config.headers, Some(headers));
+    }
+
+    #[test]
+    fn test_default_request_config() {
+        let config: RequestConfig = RequestConfig::default();
+        assert_eq!(config.response_type, ResponseType::Json);
+        assert_eq!(config.timeout, Some(0));
+    }
+
+    #[test]
+    fn test_parse_response_type() {
+        assert_eq!("json".parse::<ResponseType>().unwrap(), ResponseType::Json);
+        assert_eq!("text".parse::<ResponseType>().unwrap(), ResponseType::Text);
+        assert!("invalid".parse::<ResponseType>().is_err());
+    }
+
+    #[test]
+    fn test_request_config_with_lifetime() {
+        let config = RequestConfig {
+            timeout: Some(1000),
+            response_type: ResponseType::Text,
+            ..RequestConfig::default()
+        };
+
+        assert_eq!(config.timeout, Some(1000));
+        assert_eq!(config.response_type, ResponseType::Text);
     }
 }
