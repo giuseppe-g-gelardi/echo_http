@@ -53,7 +53,6 @@ pub struct RequestConfig<'a> {
     //
     /// `responseType` indicates the type of data that the server will respond with
     /// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
-    ///   browser only: 'blob'
     pub response_type: ResponseType, // default is JSON
 }
 
@@ -64,8 +63,6 @@ pub enum ResponseType {
     Json,
     Text,
     Stream,
-    #[cfg(target_arch = "wasm32")] // only for browser environments
-    Blob,
 }
 
 impl std::str::FromStr for ResponseType {
@@ -78,8 +75,6 @@ impl std::str::FromStr for ResponseType {
             "json" => Ok(ResponseType::Json),
             "text" => Ok(ResponseType::Text),
             "stream" => Ok(ResponseType::Stream),
-            #[cfg(target_arch = "wasm32")]
-            "blob" => Ok(ResponseType::Blob),
             _ => Err(format!("Invalid response type: {}", s)),
         }
     }
