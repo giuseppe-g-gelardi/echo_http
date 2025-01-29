@@ -12,6 +12,7 @@ pub use echo_errors::EchoError;
 
 use once_cell::sync::Lazy;
 
+// now private-internal
 /// ```rs
 /// Optional value `Nope` = Option<()> = None;
 ///
@@ -19,7 +20,7 @@ use once_cell::sync::Lazy;
 /// with no body/data
 /// ```
 #[allow(non_upper_case_globals)]
-pub const Nope: Option<()> = None;
+pub(crate) const Nope: Option<()> = None;
 
 /// ```rs
 /// Default instance, quickly start making https requests without setting up

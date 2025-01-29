@@ -1,7 +1,7 @@
 use crate::request_config::ResponseType;
 use thiserror::Error;
 
-pub mod echo_errors;
+// pub mod echo_errors;
 
 #[derive(Error, Debug)]
 pub enum EchoError {

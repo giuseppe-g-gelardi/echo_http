@@ -27,3 +27,20 @@ path = "src/lib.rs"
 
 [workspace]
 members = ["examples/*"]
+
+[[test]]
+name = "headers"
+path = "tests/headers.rs"
+
+[[test]]
+name = "http"
+path = "tests/http.rs"
+
+[[test]]
+name = "request"
+path = "tests/request.rs"
+
+[[test]]
+name = "response"
+path = "tests/response.rs"
+
