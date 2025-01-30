@@ -58,6 +58,18 @@ async fn test_post() {
 }
 
 #[tokio::test]
+async fn test_post_no_data() {
+    let echo = Echo::configure(None);
+
+    let response = echo
+        .post::<serde_json::Value>("https://jsonplaceholder.typicode.com/posts/", None)
+        .await
+        .unwrap();
+    assert_eq!(response.status, 201);
+    assert_eq!(response.status_text, "Created")
+}
+
+#[tokio::test]
 async fn test_put() {
     let echo = Echo::configure(None);
 

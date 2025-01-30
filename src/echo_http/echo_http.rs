@@ -64,6 +64,12 @@ impl<'a> Echo<'a> {
     /// let echo = Echo::configure(...);
     ///
     /// let res = echo.post::<User>("/users", Some(new_user)).await?;
+    ///
+    /// - note: in order to send a post request with no data, you must pass `None` and the type
+    /// argument must be `serde_json::Value`
+    ///
+    /// let res = echo.post::<serde_json::Value>("https://jsonplaceholder.typicode.com/posts/", None)
+    /// its janky, but it works. will be fixed in the future.
     /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where

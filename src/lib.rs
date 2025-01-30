@@ -1,14 +1,14 @@
+pub mod echo_errors;
 pub mod echo_http;
 pub mod headers;
 pub mod request_config;
 pub mod response;
-pub mod echo_errors;
 
+pub use echo_errors::EchoError;
 pub use echo_http::Echo;
 pub use headers::Headers;
 pub use request_config::RequestConfig;
 pub use response::{Response, ResponseUnknown};
-pub use echo_errors::EchoError;
 
 use once_cell::sync::Lazy;
 
