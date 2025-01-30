@@ -57,24 +57,6 @@ async fn test_post() {
     assert_eq!(response.status_text, "Created")
 }
 
-// #[tokio::test]
-// async fn test_post_no_data() {
-//     let mut config = RequestConfig::default();
-//     let mut headers = Headers::new();
-//     headers.insert("Content-Type: application/json");
-//     config.headers = Some(headers);
-//
-//     let echo = Echo::configure(Some(config));
-//     let response = echo
-//         .post("https://httpbin.org/post", Nope)
-//         .await
-//         .unwrap();
-//
-//     println!("{:?}", response);
-//
-//     assert_eq!(response.status, 201)
-// }
-
 #[tokio::test]
 async fn test_put() {
     let echo = Echo::configure(None);

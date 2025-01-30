@@ -63,8 +63,6 @@ impl<'a> Echo<'a> {
     /// ```rs
     /// let echo = Echo::configure(...);
     ///
-    /// let res = echo.post::<T>("/users", Nope).await?;
-    ///
     /// let res = echo.post::<User>("/users", Some(new_user)).await?;
     /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
