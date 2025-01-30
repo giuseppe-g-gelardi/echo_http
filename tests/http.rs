@@ -1,4 +1,4 @@
-use echo_http::{Echo, RequestConfig};
+use echo_http::{Echo, Headers, RequestConfig};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,6 +57,8 @@ async fn test_post() {
     assert_eq!(response.status_text, "Created")
 }
 
+// test post with no data
+// uses serde_json::Value && None
 #[tokio::test]
 async fn test_post_no_data() {
     let echo = Echo::configure(None);
@@ -65,6 +67,24 @@ async fn test_post_no_data() {
         .post::<serde_json::Value>("https://jsonplaceholder.typicode.com/posts/", None)
         .await
         .unwrap();
+    assert_eq!(response.status, 201);
+    assert_eq!(response.status_text, "Created")
+}
+
+// simplified version of test_post_no_data
+#[tokio::test]
+async fn test_post_no_data_2() {
+    let mut config = RequestConfig::default();
+    let mut headers = Headers::new();
+    config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
+
+    headers.insert("Content-Type: application/json");
+    config.headers = Some(headers.clone());
+
+    let echo = Echo::configure(Some(config.clone()));
+
+    let response = echo.post_no("posts").await.unwrap();
+
     assert_eq!(response.status, 201);
     assert_eq!(response.status_text, "Created")
 }

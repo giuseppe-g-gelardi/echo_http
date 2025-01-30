@@ -64,12 +64,6 @@ impl<'a> Echo<'a> {
     /// let echo = Echo::configure(...);
     ///
     /// let res = echo.post::<User>("/users", Some(new_user)).await?;
-    ///
-    /// - note: in order to send a post request with no data, you must pass `None` and the type
-    /// argument must be `serde_json::Value`
-    ///
-    /// let res = echo.post::<serde_json::Value>("https://jsonplaceholder.typicode.com/posts/", None)
-    /// its janky, but it works. will be fixed in the future.
     /// ```
     pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
@@ -78,6 +72,20 @@ impl<'a> Echo<'a> {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
         self.send_request(request, url, data).await
+    }
+
+    /// post request with no data
+    /// ```rs
+    /// let echo = Echo::configure(None);
+    /// let res = echo.post_no("https://jsonplaceholder.typicode.com/posts").await?;
+    ///
+    /// post_no is used when you want to send a post request with no data
+    /// ```
+    pub async fn post_no(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
+        let full_url = self.get_full_url(url);
+        let request = self.client.post(&full_url);
+        self.send_request_unknown::<serde_json::Value>(request, url, None)
+            .await
     }
 
     /// put request
