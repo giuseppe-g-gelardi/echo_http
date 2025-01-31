@@ -1,5 +1,3 @@
-pub mod response;
-
 use std::ops::Deref;
 
 use crate::RequestConfig;

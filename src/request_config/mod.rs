@@ -7,21 +7,75 @@ use std::collections::HashMap;
 use crate::headers::Headers;
 
 /// Request Configuration
-/// `url` is the server URL that will be used for the request
-/// `method` is the request method to be used when making the request
-/// `base_url` will be prepended to `url` unless `url` is absolute. It can be convenient to set `baseURL` for an instance of axios to pass relative URLs to methods of that instance.
-/// 'headers' are custom headers to be sent
-/// `params` are URL parameters to be sent with the request. #TODO! must be plain object or
-/// URLSearchParams object
-/// `data` is the data to be sent as the request body.
-/// `timeout` specifies the number of milliseconds before the request times out. If the request takes longer than `timeout`, the request will be aborted.
 #[derive(Debug, Clone)]
 pub struct RequestConfig<'a> {
+    /// `url` is the server URL that will be used for the request
     pub url: Option<String>,
+
+    /// `method` is the request method to be used when making the request
     pub method: Method, // 'GET' is the default
+
+    /// `baseURL` will be prepended to `url` unless `url` is absolute.
+    /// It can be convenient to set `baseURL` for an instance of echo_http to pass relative URLs
+    /// to methods of that instance.
     pub base_url: Option<String>,
+
+    /// `headers` are custom headers to be sent
     pub headers: Option<Headers<'a>>,
+
+    /// `params` are the URL parameters to be sent with the request
+    /// Must be a plain object or a URLSearchParams object
     pub params: Option<HashMap<String, String>>,
+
+    /// `data` is the data to be sent as the request body
+    /// Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH' (soon &trade;)
+    /// When no `transformRequest` (soon &trade;) is set, must be of one of the following types:
+    /// - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
+    /// - Browser only: FormData, File, Blob
+    /// - Node only: Stream, Buffer, FormData (form-data package)
     pub data: Option<Value>,
+
+    /// `timeout` specifies the number of milliseconds before the request times out.
+    /// If the request takes longer than `timeout`, the request will be aborted.
+    /// the default value is `0` (no timeout)
     pub timeout: Option<u64>,
+    //
+    // (soon &trade;)
+    // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+    //xsrf_cookie_name: Option<String>, // xsrfCookieName: 'XSRF-TOKEN', // default
+
+    // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+    //xsrf_header_name: Option<String>, // xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+    // `undefined` (default) - set XSRF header only for the same origin requests
+    //with_xsrf_token: Option<bool>, // withXSRFToken: boolean | undefined | ((config: Internalecho_httpRequestConfig) => boolean | undefined),
+    //
+    //
+    /// `responseType` indicates the type of data that the server will respond with
+    /// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+    pub response_type: ResponseType, // default is JSON
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResponseType {
+    ArrayBuffer,
+    Document,
+    Json,
+    Text,
+    Stream,
+}
+
+impl std::str::FromStr for ResponseType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "arraybuffer" => Ok(ResponseType::ArrayBuffer),
+            "document" => Ok(ResponseType::Document),
+            "json" => Ok(ResponseType::Json),
+            "text" => Ok(ResponseType::Text),
+            "stream" => Ok(ResponseType::Stream),
+            _ => Err(format!("Invalid response type: {}", s)),
+        }
+    }
 }
