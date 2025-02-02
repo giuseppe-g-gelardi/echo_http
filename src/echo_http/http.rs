@@ -1,4 +1,4 @@
-use crate::{ Echo, EchoError, Response, ResponseUnknown};
+use crate::{Echo, EchoError, Response, ResponseUnknown};
 use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -18,7 +18,6 @@ impl HttpClient for Echo<'_> {
     async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
         T: Serialize + DeserializeOwned + Send,
-        
     {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
@@ -52,7 +51,6 @@ impl HttpClient for Echo<'_> {
         self.send_request_unknown(request, url, None::<()>).await
     }
 }
-
 
 // impl<'a> Echo<'a> {
 //     pub fn configure(config: Option<RequestConfig<'a>>) -> Self {

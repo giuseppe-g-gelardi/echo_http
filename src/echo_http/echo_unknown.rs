@@ -14,10 +14,7 @@ impl<'a> Echo<'a> {
             .to_string();
         let headers = response.headers().clone();
 
-        let data: serde_json::Value = response
-            .json()
-            .await
-            .unwrap_or(serde_json::Value::Null);
+        let data: serde_json::Value = response.json().await.unwrap_or(serde_json::Value::Null);
 
         Ok(ResponseUnknown {
             inner: Response {

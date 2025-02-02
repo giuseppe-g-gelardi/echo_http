@@ -1,8 +1,8 @@
 use crate::RequestConfig;
 
-pub mod http;
 pub mod echo_internal;
 pub mod echo_unknown;
+pub mod http;
 pub mod http_client;
 pub mod request_handler;
 
@@ -14,7 +14,7 @@ pub struct Echo<'a> {
     client: reqwest::Client,
 }
 
-impl <'a> Echo<'a> {
+impl<'a> Echo<'a> {
     /// Create an Echo instance with the `configure()` method.
     /// configure takes an Option;
     /// ```rs

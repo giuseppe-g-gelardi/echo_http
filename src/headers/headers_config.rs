@@ -62,4 +62,3 @@ impl From<Headers<'_>> for HeaderMap {
         val.to_header_map()
     }
 }
-

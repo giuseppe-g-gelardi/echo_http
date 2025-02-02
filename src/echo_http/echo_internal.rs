@@ -49,10 +49,7 @@ impl RequestHandler for Echo<'_> {
             .to_string();
         let headers = response.headers().clone();
 
-        let data: serde_json::Value = response
-            .json()
-            .await
-            .unwrap_or(serde_json::Value::Null);
+        let data: serde_json::Value = response.json().await.unwrap_or(serde_json::Value::Null);
 
         Ok(ResponseUnknown {
             inner: Response {
@@ -103,7 +100,6 @@ impl RequestHandler for Echo<'_> {
         self.parse_response_unknown(response, url).await
     }
 }
-
 
 impl<'a> Echo<'a> {
     fn parse_url(url: &str) -> String {
@@ -185,7 +181,6 @@ impl<'a> Echo<'a> {
             )),
         }
     }
-
 }
 
 #[cfg(test)]
