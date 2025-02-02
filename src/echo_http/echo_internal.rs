@@ -1,4 +1,4 @@
-use crate::{request_config::ResponseType, Echo, EchoError, Response};
+use crate::{request::ResponseType, Echo, EchoError, Response};
 
 impl<'a> Echo<'a> {
     fn parse_url(url: &str) -> String {

@@ -17,7 +17,7 @@ impl<'a> Echo<'a> {
         let data: serde_json::Value = response
             .json()
             .await
-            .unwrap_or_else(|_| serde_json::Value::Null);
+            .unwrap_or(serde_json::Value::Null);
 
         Ok(ResponseUnknown {
             inner: Response {
