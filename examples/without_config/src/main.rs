@@ -1,4 +1,4 @@
-use echo_http::{echo, Response, ResponseUnknown};
+use echo_http::{echo, echo_http::HttpClient, Response, ResponseUnknown};
 use serde::{Deserialize, Serialize};
 
 type Err = Box<dyn std::error::Error>;

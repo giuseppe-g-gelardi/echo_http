@@ -1,6 +1,11 @@
-use crate::{request::ResponseType, Echo, EchoError, Response};
+use crate::{request::ResponseType, Echo, EchoError, RequestConfig, Response};
 
 impl<'a> Echo<'a> {
+    pub fn configure(config: Option<RequestConfig<'a>>) -> Self {
+        let config = config.unwrap_or_default();
+        let client = reqwest::Client::new();
+        Echo { config, client }
+    }
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
