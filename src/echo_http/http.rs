@@ -2,13 +2,13 @@ use crate::{ Echo, EchoError, Response, ResponseUnknown};
 use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
-use super::HttpClient;
+use super::{HttpClient, RequestHandler};
 
 #[async_trait]
 impl HttpClient for Echo<'_> {
     async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
-        T: Serialize + DeserializeOwned,
+        T: Serialize + DeserializeOwned + Send,
     {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
@@ -55,26 +55,6 @@ impl HttpClient for Echo<'_> {
 
 
 // impl<'a> Echo<'a> {
-//     /// Create an Echo instance with the `configure()` method.
-//     /// configure takes an Option;
-//     /// ```rs
-//     /// Option<Config> or None
-//     ///
-//     /// Configure the Echo instance a few different ways
-//     ///
-//     /// let mut config = RequestConfig::default();
-//     /// config.base_url = Some("https://jsonplaceholder.typicode.com/posts/1".to_string());
-//     ///
-//     /// let echo = Echo::configure(Some(config));
-//     ///
-//     /// or
-//     ///
-//     /// passing None allows you to send a request to a full url
-//     /// let echo = Echo::configure(None);
-//     ///
-//     /// let res = echo.get("https://jsonplaceholder.typicode.com/users/1")
-//     /// ```
-//     ///
 //     pub fn configure(config: Option<RequestConfig<'a>>) -> Self {
 //         let config = config.unwrap_or_default();
 

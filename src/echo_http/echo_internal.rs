@@ -1,4 +1,109 @@
-use crate::{request::ResponseType, Echo, EchoError, Response};
+use async_trait::async_trait;
+use reqwest::RequestBuilder;
+use serde::{de::DeserializeOwned, Serialize};
+
+use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown};
+
+use super::RequestHandler;
+
+#[async_trait]
+impl RequestHandler for Echo<'_> {
+    async fn parse_response<T>(
+        &self,
+        response: reqwest::Response,
+        url: &str,
+    ) -> Result<Response<T>, EchoError>
+    where
+        T: DeserializeOwned + Send,
+    {
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        let data = self.handle_response_type::<T>(response).await?;
+
+        Ok(Response {
+            data,
+            status,
+            status_text,
+            headers,
+            config: self.config.clone(),
+            request: self.get_full_url(url),
+        })
+    }
+
+    async fn parse_response_unknown(
+        &self,
+        response: reqwest::Response,
+        url: &str,
+    ) -> Result<ResponseUnknown, EchoError> {
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .unwrap_or(serde_json::Value::Null);
+
+        Ok(ResponseUnknown {
+            inner: Response {
+                data,
+                status,
+                status_text,
+                headers,
+                config: self.config.clone(),
+                request: self.get_full_url(url),
+            },
+        })
+    }
+
+    async fn send_request<T, U>(
+        &self,
+        mut request: RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<Response<U>, EchoError>
+    where
+        T: Serialize + Send,
+        U: DeserializeOwned + Send,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response(response, url).await
+    }
+
+    async fn send_request_unknown<T>(
+        &self,
+        mut request: RequestBuilder,
+        url: &str,
+        body: Option<T>,
+    ) -> Result<ResponseUnknown, EchoError>
+    where
+        T: Serialize + Send,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse_response_unknown(response, url).await
+    }
+}
+
 
 impl<'a> Echo<'a> {
     fn parse_url(url: &str) -> String {
@@ -81,52 +186,6 @@ impl<'a> Echo<'a> {
         }
     }
 
-    async fn parse_response<T>(
-        &self,
-        response: reqwest::Response,
-        url: &str,
-    ) -> Result<Response<T>, EchoError>
-    where
-        T: serde::de::DeserializeOwned,
-    {
-        let status = response.status().as_u16();
-        let status_text = response
-            .status()
-            .canonical_reason()
-            .unwrap_or("")
-            .to_string();
-        let headers = response.headers().clone();
-
-        let data = self.handle_response_type::<T>(response).await?;
-
-        Ok(Response {
-            data,
-            status,
-            status_text,
-            headers,
-            config: self.config.clone(),
-            request: self.get_full_url(url),
-        })
-    }
-
-    pub(crate) async fn send_request<T, U>(
-        &self,
-        mut request: reqwest::RequestBuilder,
-        url: &str,
-        body: Option<T>,
-    ) -> Result<Response<U>, EchoError>
-    where
-        T: serde::Serialize,
-        U: serde::de::DeserializeOwned,
-    {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-        self.parse_response(response, url).await
-    }
 }
 
 #[cfg(test)]

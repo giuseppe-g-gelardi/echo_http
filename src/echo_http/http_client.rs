@@ -6,7 +6,7 @@ use serde::{de::DeserializeOwned, Serialize};
 pub trait HttpClient {
     async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
-        T: Serialize + DeserializeOwned;
+        T: Serialize + DeserializeOwned + Send;
 
     async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
