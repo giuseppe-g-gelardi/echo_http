@@ -1,13 +1,7 @@
 use crate::RequestConfig;
 
-pub mod echo_internal;
-pub mod echo_unknown;
-pub mod http;
-pub mod http_client;
-pub mod request_handler;
-
-// pub use http_client::HttpClient;
-pub use request_handler::RequestHandler;
+mod internal;
+pub mod echo_http;
 
 pub struct Echo<'a> {
     pub config: RequestConfig<'a>,

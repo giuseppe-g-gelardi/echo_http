@@ -1,13 +1,9 @@
-use async_trait::async_trait;
 use reqwest::RequestBuilder;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown};
+use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown,};
 
-use super::RequestHandler;
-
-#[async_trait]
-impl RequestHandler for Echo<'_> {
+impl Echo<'_> {
     async fn parse_response<T>(
         &self,
         response: reqwest::Response,
@@ -36,7 +32,7 @@ impl RequestHandler for Echo<'_> {
         })
     }
 
-    async fn parse_response_unknown(
+    pub async fn parse_response_unknown(
         &self,
         response: reqwest::Response,
         url: &str,
@@ -63,7 +59,7 @@ impl RequestHandler for Echo<'_> {
         })
     }
 
-    async fn send_request<T, U>(
+    pub async fn send_request<T, U>(
         &self,
         mut request: RequestBuilder,
         url: &str,
@@ -82,7 +78,7 @@ impl RequestHandler for Echo<'_> {
         self.parse_response(response, url).await
     }
 
-    async fn send_request_unknown<T>(
+    pub async fn send_request_unknown<T>(
         &self,
         mut request: RequestBuilder,
         url: &str,

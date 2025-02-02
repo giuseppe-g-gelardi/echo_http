@@ -1,4 +1,4 @@
-use echo_http::{echo_http::HttpClient, Echo, Headers, RequestConfig};
+use echo_http::{Echo, Headers, RequestConfig};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

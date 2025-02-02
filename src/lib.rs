@@ -1,11 +1,11 @@
 pub mod echo_errors;
-pub mod echo_http;
+pub mod client;
 pub mod headers;
 pub mod request;
 pub mod response;
 
-pub use echo_errors::EchoError;
-pub use echo_http::Echo;
+use echo_errors::EchoError;
+pub use client::Echo;
 pub use headers::Headers;
 pub use request::RequestConfig;
 pub use response::{Response, ResponseUnknown};
