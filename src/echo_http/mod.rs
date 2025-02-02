@@ -1,6 +1,6 @@
 use crate::RequestConfig;
 
-pub mod echo_http;
+pub mod http;
 pub mod echo_internal;
 pub mod echo_unknown;
 

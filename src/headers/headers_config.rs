@@ -57,9 +57,9 @@ impl<'a> Headers<'a> {
 }
 
 /// Automatically convert `Headers` into `reqwest::header::HeaderMap`.
-impl Into<HeaderMap> for Headers<'_> {
-    fn into(self) -> HeaderMap {
-        self.to_header_map()
+impl From<Headers<'_>> for HeaderMap {
+    fn from(val: Headers<'_>) -> Self {
+        val.to_header_map()
     }
 }
 

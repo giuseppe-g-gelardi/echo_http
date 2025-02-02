@@ -26,8 +26,10 @@ async fn test_get() {
 
 #[tokio::test]
 async fn test_get_unknown() {
-    let mut config = RequestConfig::default();
-    config.base_url = Some("https://jsonplaceholder.typicode.com/".to_string());
+    let config = RequestConfig {
+        base_url: Some("https://jsonplaceholder.typicode.com/".to_string()),
+        ..RequestConfig::default()
+    };
 
     let echo = Echo::configure(Some(config));
 

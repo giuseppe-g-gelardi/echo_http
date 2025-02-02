@@ -1,4 +1,4 @@
-use echo_http::{request_config::ResponseType, Headers, RequestConfig};
+use echo_http::{request::ResponseType, Headers, RequestConfig};
 use reqwest::Method;
 
 #[test]
@@ -16,12 +16,13 @@ fn test_default() {
 
 #[test]
 fn test_update_config() {
-    let mut config = RequestConfig::default();
-    config.url = Some("https://api.example.com".to_string());
-    config.method = Method::POST;
-    config.base_url = Some("https://api.example.com".to_string());
-    config.timeout = Some(2000);
-    ..RequestConfig::default();
+    let config = RequestConfig {
+        url: Some("https://api.example.com".to_string()),
+        method: Method::POST,
+        base_url: Some("https://api.example.com".to_string()),
+        timeout: Some(2000),
+        ..RequestConfig::default()
+    };
 
     assert_eq!(config.url, Some("https://api.example.com".to_string()));
     assert_eq!(config.method, Method::POST);

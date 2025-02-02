@@ -1,4 +1,4 @@
-use echo_http::request_config::ResponseType;
+use echo_http::request::ResponseType;
 use echo_http::{Headers, RequestConfig, Response, ResponseUnknown};
 use serde_json::json;
 
@@ -7,12 +7,14 @@ fn test_response_creation() {
     let mut headers = Headers::new();
     headers.insert("Content-Type: application/json");
 
-    let mut config = RequestConfig::default();
-    config.base_url = Some("https://api.example.com".to_string());
-    config.timeout = Some(30);
-    config.headers = Some(headers.clone());
-    config.params = None;
-    config.response_type = ResponseType::Json;
+    let config = RequestConfig {
+        base_url: Some("https://api.example.com".to_string()),
+        timeout: Some(30),
+        headers: Some(headers.clone()),
+        params: None,
+        response_type: ResponseType::Json,
+        ..RequestConfig::default()
+    };
 
     let response = Response {
         data: json!({ "message": "success" }),
@@ -34,12 +36,14 @@ fn test_response_unknown() {
     let mut headers = Headers::new();
     headers.insert("Content-Type: application/json");
 
-    let mut config = RequestConfig::default();
-    config.base_url = Some("https://api.example.com".to_string());
-    config.timeout = Some(30);
-    config.headers = Some(headers.clone());
-    config.params = None;
-    config.response_type = ResponseType::Json;
+    let config = RequestConfig {
+        base_url: Some("https://api.example.com".to_string()),
+        timeout: Some(30),
+        headers: Some(headers.clone()),
+        params: None,
+        response_type: ResponseType::Json,
+        ..RequestConfig::default()
+    };
 
     let response = Response {
         data: json!({ "id": 123, "name": "Test" }),
