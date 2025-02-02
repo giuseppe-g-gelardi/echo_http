@@ -6,7 +6,7 @@ pub mod http;
 pub mod http_client;
 pub mod request_handler;
 
-pub use http_client::HttpClient;
+// pub use http_client::HttpClient;
 pub use request_handler::RequestHandler;
 
 pub struct Echo<'a> {

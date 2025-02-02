@@ -1,12 +1,34 @@
 use crate::{Echo, EchoError, Response, ResponseUnknown};
-use async_trait::async_trait;
+// use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
-use super::{HttpClient, RequestHandler};
+use super::RequestHandler;
 
-#[async_trait]
-impl HttpClient for Echo<'_> {
-    async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
+// #[async_trait]
+// pub trait HttpClient {
+//     async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
+//     where
+//         T: Serialize + DeserializeOwned + Send;
+//
+//     async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
+//     where
+//         T: Serialize + DeserializeOwned + Send;
+//
+//     async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
+//     where
+//         T: Serialize + DeserializeOwned + Send;
+//
+//     async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError>;
+//
+//     async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError>;
+//
+//     async fn post_no(&self, url: &str) -> Result<ResponseUnknown, EchoError>;
+// }
+
+// #[async_trait]
+// impl HttpClient for Echo<'_> {
+impl Echo<'_> {
+    pub async fn get<T>(&self, url: &str) -> Result<Response<T>, EchoError>
     where
         T: Serialize + DeserializeOwned + Send,
     {
@@ -15,7 +37,7 @@ impl HttpClient for Echo<'_> {
         self.send_request(request, url, None::<()>).await
     }
 
-    async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
+    pub async fn post<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
         T: Serialize + DeserializeOwned + Send,
     {
@@ -24,7 +46,7 @@ impl HttpClient for Echo<'_> {
         self.send_request(request, url, data).await
     }
 
-    async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
+    pub async fn put<T>(&self, url: &str, data: Option<T>) -> Result<Response<T>, EchoError>
     where
         T: Serialize + DeserializeOwned + Send,
     {
@@ -33,19 +55,19 @@ impl HttpClient for Echo<'_> {
         self.send_request(request, url, data).await
     }
 
-    async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
+    pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
         self.send_request_unknown(request, url, None::<()>).await
     }
 
-    async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
+    pub async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
         self.send_request_unknown(request, url, None::<()>).await
     }
 
-    async fn post_no(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
+    pub async fn post_no(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
         self.send_request_unknown(request, url, None::<()>).await
