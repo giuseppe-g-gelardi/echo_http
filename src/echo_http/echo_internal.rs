@@ -1,11 +1,6 @@
-use crate::{request::ResponseType, Echo, EchoError, RequestConfig, Response};
+use crate::{request::ResponseType, Echo, EchoError, Response};
 
 impl<'a> Echo<'a> {
-    pub fn configure(config: Option<RequestConfig<'a>>) -> Self {
-        let config = config.unwrap_or_default();
-        let client = reqwest::Client::new();
-        Echo { config, client }
-    }
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
@@ -102,11 +97,6 @@ impl<'a> Echo<'a> {
             .to_string();
         let headers = response.headers().clone();
 
-        // let data = if response.status().is_success() {
-        //     response.json::<T>().await? // Deserialize directly to T
-        // } else {
-        //     panic!("Unexpected response body or error for URL: {}", url)
-        // };
         let data = self.handle_response_type::<T>(response).await?;
 
         Ok(Response {

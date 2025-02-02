@@ -11,3 +11,11 @@ pub struct Echo<'a> {
     pub config: RequestConfig<'a>,
     client: reqwest::Client,
 }
+
+impl <'a> Echo<'a> {
+    pub fn configure(config: Option<RequestConfig<'a>>) -> Self {
+        let config = config.unwrap_or_default();
+        let client = reqwest::Client::new();
+        Echo { config, client }
+    }
+}
