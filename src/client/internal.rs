@@ -1,8 +1,7 @@
 use reqwest::RequestBuilder;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::ParsedResponse;
-use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown};
+use crate::{request::ResponseType, Echo, EchoError, ParsedResponse, Response, ResponseUnknown};
 
 impl Echo {
     async fn parse<T>(

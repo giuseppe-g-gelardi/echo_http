@@ -7,11 +7,10 @@ pub mod response;
 pub use client::Echo;
 pub use headers::Headers;
 pub use request::RequestConfig;
-pub use response::Response;
+pub use response::{Response, ResponseUnknown};
 
 use echo_errors::EchoError;
-pub use response::ResponseUnknown;
-pub use response::ParsedResponse;
+use response::ParsedResponse;
 
 use once_cell::sync::Lazy;
 

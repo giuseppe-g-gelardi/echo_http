@@ -1,5 +1,4 @@
-use crate::response::ParsedResponse;
-use crate::{Echo, EchoError, Response, ResponseUnknown};
+use crate::{Echo, EchoError, ParsedResponse, Response, ResponseUnknown};
 use serde::{de::DeserializeOwned, Serialize};
 
 impl Echo {
@@ -14,7 +13,6 @@ impl Echo {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
-        // self.send_request(request, url, None::<()>).await
         match self.send::<(), T>(request, url, None, false).await? {
             ParsedResponse::Response(res) => Ok(res),
             ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
@@ -33,7 +31,6 @@ impl Echo {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
-        // self.send_request(request, url, data).await
         match self.send::<T, T>(request, url, data, false).await? {
             ParsedResponse::Response(res) => Ok(res),
             ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
@@ -67,7 +64,6 @@ impl Echo {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.put(&full_url);
-        // self.send_request(request, url, data).await
         match self.send::<T, T>(request, url, data, false).await? {
             ParsedResponse::Response(res) => Ok(res),
             ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
@@ -83,7 +79,6 @@ impl Echo {
     pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
-        // self.send_request_unknown(request, url, None::<()>).await
         match self
             .send::<(), serde_json::Value>(request, url, None, true)
             .await?
@@ -105,8 +100,6 @@ impl Echo {
     pub async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
-        // self.send_request_unknown(request, url, None::<()>).await
-        // self.send(request, url, None::<()>, true).await
         match self
             .send::<(), serde_json::Value>(request, url, None, true)
             .await?
