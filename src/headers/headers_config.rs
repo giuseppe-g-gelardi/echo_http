@@ -4,7 +4,7 @@ use reqwest::header::HeaderMap;
 use std::collections::HashMap;
 
 /// A struct for managing headers.
-impl<'a> Headers<'a> {
+impl Headers {
     /// Creates a new `Headers` instance.
     pub fn new() -> Self {
         Headers {
@@ -18,9 +18,10 @@ impl<'a> Headers<'a> {
     ///
     /// let mut headers = Headers::new();
     /// headers.insert("Content-Type: application/json");
-    pub fn insert(&mut self, header: &'a str) {
+    pub fn insert(&mut self, header: &str) {
         if let Some((key, value)) = header.split_once(':') {
-            self.headers.insert(key.trim(), value.trim());
+            self.headers
+                .insert(key.trim().to_string(), value.trim().to_string());
         } else {
             panic!("Header must be in the format 'key: value'");
         }
@@ -37,7 +38,7 @@ impl<'a> Headers<'a> {
     ///    "Authorization: Bearer token",
     ///    "X-Api-Key: secret",
     /// ]);
-    pub fn insert_many(&mut self, headers: Vec<&'a str>) {
+    pub fn insert_many(&mut self, headers: Vec<&str>) {
         for header in headers {
             self.insert(header);
         }
@@ -57,8 +58,8 @@ impl<'a> Headers<'a> {
 }
 
 /// Automatically convert `Headers` into `reqwest::header::HeaderMap`.
-impl From<Headers<'_>> for HeaderMap {
-    fn from(val: Headers<'_>) -> Self {
+impl From<Headers> for HeaderMap {
+    fn from(val: Headers) -> Self {
         val.to_header_map()
     }
 }

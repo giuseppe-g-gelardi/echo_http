@@ -2,7 +2,7 @@ use crate::response::ParsedResponse;
 use crate::{Echo, EchoError, Response, ResponseUnknown};
 use serde::{de::DeserializeOwned, Serialize};
 
-impl Echo<'_> {
+impl Echo {
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);

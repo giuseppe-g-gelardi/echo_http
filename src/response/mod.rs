@@ -3,22 +3,22 @@ use std::ops::Deref;
 use crate::RequestConfig;
 
 #[derive(Debug)]
-pub struct Response<'a, T> {
+pub struct Response<T> {
     pub data: T,
     pub status: u16,
     pub status_text: String,
     pub headers: reqwest::header::HeaderMap,
-    pub config: RequestConfig<'a>,
+    pub config: RequestConfig,
     pub request: String,
 }
 
 #[derive(Debug)]
-pub struct ResponseUnknown<'a> {
-    pub inner: Response<'a, serde_json::Value>,
+pub struct ResponseUnknown {
+    pub inner: Response<serde_json::Value>,
 }
 
-impl<'a> Deref for ResponseUnknown<'a> {
-    type Target = Response<'a, serde_json::Value>;
+impl Deref for ResponseUnknown {
+    type Target = Response<serde_json::Value>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -26,7 +26,7 @@ impl<'a> Deref for ResponseUnknown<'a> {
 }
 
 #[derive(Debug)]
-pub enum ParsedResponse<'a, T> {
-    Response(Response<'a, T>),
-    ResponseUnknown(ResponseUnknown<'a>),
+pub enum ParsedResponse<T> {
+    Response(Response<T>),
+    ResponseUnknown(ResponseUnknown),
 }

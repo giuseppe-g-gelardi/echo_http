@@ -8,7 +8,7 @@ use crate::headers::Headers;
 
 /// Request Configuration
 #[derive(Debug, Clone)]
-pub struct RequestConfig<'a> {
+pub struct RequestConfig {
     /// `url` is the server URL that will be used for the request
     pub url: Option<String>,
 
@@ -21,7 +21,7 @@ pub struct RequestConfig<'a> {
     pub base_url: Option<String>,
 
     /// `headers` are custom headers to be sent
-    pub headers: Option<Headers<'a>>,
+    pub headers: Option<Headers>,
 
     /// `params` are the URL parameters to be sent with the request
     /// Must be a plain object or a URLSearchParams object

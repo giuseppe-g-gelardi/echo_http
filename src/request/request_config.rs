@@ -1,7 +1,7 @@
 use super::{RequestConfig, ResponseType};
 use reqwest::Method;
 
-impl Default for RequestConfig<'_> {
+impl Default for RequestConfig {
     fn default() -> Self {
         RequestConfig {
             url: None,
