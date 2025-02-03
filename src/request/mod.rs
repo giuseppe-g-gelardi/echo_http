@@ -8,7 +8,7 @@ use crate::headers::Headers;
 
 /// Request Configuration
 #[derive(Debug, Clone)]
-pub struct RequestConfig<'a> {
+pub struct RequestConfig {
     /// `url` is the server URL that will be used for the request
     pub url: Option<String>,
 
@@ -21,7 +21,7 @@ pub struct RequestConfig<'a> {
     pub base_url: Option<String>,
 
     /// `headers` are custom headers to be sent
-    pub headers: Option<Headers<'a>>,
+    pub headers: Option<Headers>,
 
     /// `params` are the URL parameters to be sent with the request
     /// Must be a plain object or a URLSearchParams object
@@ -39,18 +39,7 @@ pub struct RequestConfig<'a> {
     /// If the request takes longer than `timeout`, the request will be aborted.
     /// the default value is `0` (no timeout)
     pub timeout: Option<u64>,
-    //
-    // (soon &trade;)
-    // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
-    //xsrf_cookie_name: Option<String>, // xsrfCookieName: 'XSRF-TOKEN', // default
 
-    // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-    //xsrf_header_name: Option<String>, // xsrfHeaderName: 'X-XSRF-TOKEN', // default
-
-    // `undefined` (default) - set XSRF header only for the same origin requests
-    //with_xsrf_token: Option<bool>, // withXSRFToken: boolean | undefined | ((config: Internalecho_httpRequestConfig) => boolean | undefined),
-    //
-    //
     /// `responseType` indicates the type of data that the server will respond with
     /// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
     pub response_type: ResponseType, // default is JSON

@@ -1,6 +1,77 @@
-use crate::{request::ResponseType, Echo, EchoError, Response};
+use reqwest::RequestBuilder;
+use serde::{de::DeserializeOwned, Serialize};
 
-impl<'a> Echo<'a> {
+use crate::{request::ResponseType, Echo, EchoError, ParsedResponse, Response, ResponseUnknown};
+
+impl Echo {
+    async fn parse<T>(
+        &self,
+        response: reqwest::Response,
+        url: &str,
+        is_unknown_response: bool,
+    ) -> Result<ParsedResponse<T>, EchoError>
+    where
+        T: DeserializeOwned + Send,
+    {
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        match is_unknown_response {
+            true => {
+                let data: serde_json::Value =
+                    response.json().await.unwrap_or(serde_json::Value::Null);
+                Ok(ParsedResponse::ResponseUnknown(ResponseUnknown {
+                    inner: Response {
+                        data,
+                        status,
+                        status_text,
+                        headers,
+                        config: self.config.clone(),
+                        request: self.get_full_url(url),
+                    },
+                }))
+            }
+            false => {
+                let data = self.handle_response_type::<T>(response).await?;
+                Ok(ParsedResponse::Response(Response {
+                    data,
+                    status,
+                    status_text,
+                    headers,
+                    config: self.config.clone(),
+                    request: self.get_full_url(url),
+                }))
+            }
+        }
+    }
+
+    pub async fn send<T, U>(
+        &self,
+        mut request: RequestBuilder,
+        url: &str,
+        body: Option<T>,
+        is_unknown_response: bool,
+    ) -> Result<ParsedResponse<U>, EchoError>
+    where
+        T: Serialize + Send,
+        U: DeserializeOwned + Send,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse(response, url, is_unknown_response).await
+    }
+}
+
+impl Echo {
     fn parse_url(url: &str) -> String {
         let url = url.trim_start_matches("/").trim_end_matches("/");
 
@@ -79,58 +150,6 @@ impl<'a> Echo<'a> {
                 self.config.response_type,
             )),
         }
-    }
-
-    async fn parse_response<T>(
-        &self,
-        response: reqwest::Response,
-        url: &str,
-    ) -> Result<Response<T>, EchoError>
-    where
-        T: serde::de::DeserializeOwned,
-    {
-        let status = response.status().as_u16();
-        let status_text = response
-            .status()
-            .canonical_reason()
-            .unwrap_or("")
-            .to_string();
-        let headers = response.headers().clone();
-
-        // let data = if response.status().is_success() {
-        //     response.json::<T>().await? // Deserialize directly to T
-        // } else {
-        //     panic!("Unexpected response body or error for URL: {}", url)
-        // };
-        let data = self.handle_response_type::<T>(response).await?;
-
-        Ok(Response {
-            data,
-            status,
-            status_text,
-            headers,
-            config: self.config.clone(),
-            request: self.get_full_url(url),
-        })
-    }
-
-    pub(crate) async fn send_request<T, U>(
-        &self,
-        mut request: reqwest::RequestBuilder,
-        url: &str,
-        body: Option<T>,
-    ) -> Result<Response<U>, EchoError>
-    where
-        T: serde::Serialize,
-        U: serde::de::DeserializeOwned,
-    {
-        request = self.apply_headers(request);
-        request = self.apply_timeout(request);
-        request = self.apply_body(request, body);
-        request = self.apply_params(request);
-
-        let response = request.send().await?;
-        self.parse_response(response, url).await
     }
 }
 

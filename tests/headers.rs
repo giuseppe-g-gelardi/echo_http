@@ -8,7 +8,7 @@ fn test_insert_single_header() {
 
     assert_eq!(
         headers.headers.get("Content-Type"),
-        Some(&"application/json")
+        Some(&"application/json".to_string())
     );
 }
 
@@ -22,9 +22,12 @@ fn test_insert_many_headers() {
 
     assert_eq!(
         headers.headers.get("Content-Type"),
-        Some(&"application/json")
+        Some(&"application/json".to_string())
     );
-    assert_eq!(headers.headers.get("Authorization"), Some(&"Bearer token"));
+    assert_eq!(
+        headers.headers.get("Authorization"),
+        Some(&"Bearer token".to_string())
+    );
 }
 
 #[test]
