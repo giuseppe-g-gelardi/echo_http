@@ -1,14 +1,16 @@
-pub mod echo_errors;
 pub mod client;
+pub mod echo_errors;
 pub mod headers;
 pub mod request;
 pub mod response;
 
-use echo_errors::EchoError;
 pub use client::Echo;
 pub use headers::Headers;
 pub use request::RequestConfig;
-pub use response::{Response, ResponseUnknown};
+pub use response::Response;
+
+use echo_errors::EchoError;
+use response::ResponseUnknown;
 
 use once_cell::sync::Lazy;
 

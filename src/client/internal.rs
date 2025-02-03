@@ -1,7 +1,81 @@
 use reqwest::RequestBuilder;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown,};
+use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown};
+
+#[derive(Debug)]
+pub enum ParsedResponse<'a, T> {
+    Response(Response<'a, T>),
+    ResponseUnknown(ResponseUnknown<'a>),
+}
+
+impl Echo<'_> {
+    async fn parse<T>(
+        &self,
+        response: reqwest::Response,
+        url: &str,
+        is_unknown_response: bool,
+    ) -> Result<ParsedResponse<'_, T>, EchoError>
+    where
+        T: DeserializeOwned + Send,
+    {
+        let status = response.status().as_u16();
+        let status_text = response
+            .status()
+            .canonical_reason()
+            .unwrap_or("")
+            .to_string();
+        let headers = response.headers().clone();
+
+        match is_unknown_response {
+            true => {
+                let data: serde_json::Value =
+                    response.json().await.unwrap_or(serde_json::Value::Null);
+                Ok(ParsedResponse::ResponseUnknown(ResponseUnknown {
+                    inner: Response {
+                        data,
+                        status,
+                        status_text,
+                        headers,
+                        config: self.config.clone(),
+                        request: self.get_full_url(url),
+                    },
+                }))
+            }
+            false => {
+                let data = self.handle_response_type::<T>(response).await?;
+                Ok(ParsedResponse::Response(Response {
+                    data,
+                    status,
+                    status_text,
+                    headers,
+                    config: self.config.clone(),
+                    request: self.get_full_url(url),
+                }))
+            }
+        }
+    }
+
+    pub async fn send<T, U>(
+        &self,
+        mut request: RequestBuilder,
+        url: &str,
+        body: Option<T>,
+        is_unknown_response: bool,
+    ) -> Result<ParsedResponse<'_, U>, EchoError>
+    where
+        T: Serialize + Send,
+        U: DeserializeOwned + Send,
+    {
+        request = self.apply_headers(request);
+        request = self.apply_timeout(request);
+        request = self.apply_body(request, body);
+        request = self.apply_params(request);
+
+        let response = request.send().await?;
+        self.parse(response, url, is_unknown_response).await
+    }
+}
 
 impl Echo<'_> {
     async fn parse_response<T>(
