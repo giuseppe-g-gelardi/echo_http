@@ -1,8 +1,8 @@
+use crate::response::ParsedResponse;
 use crate::{Echo, EchoError, Response, ResponseUnknown};
 use serde::{de::DeserializeOwned, Serialize};
 
 impl Echo<'_> {
-
     /// get request
     /// ```rs
     /// let echo = Echo::configure(None);
@@ -14,7 +14,11 @@ impl Echo<'_> {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
-        self.send_request(request, url, None::<()>).await
+        // self.send_request(request, url, None::<()>).await
+        match self.send::<(), T>(request, url, None, false).await? {
+            ParsedResponse::Response(res) => Ok(res),
+            ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
+        }
     }
 
     /// post request
@@ -29,7 +33,11 @@ impl Echo<'_> {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
-        self.send_request(request, url, data).await
+        // self.send_request(request, url, data).await
+        match self.send::<T, T>(request, url, data, false).await? {
+            ParsedResponse::Response(res) => Ok(res),
+            ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
+        }
     }
 
     /// put request
@@ -59,7 +67,11 @@ impl Echo<'_> {
     {
         let full_url = self.get_full_url(url);
         let request = self.client.put(&full_url);
-        self.send_request(request, url, data).await
+        // self.send_request(request, url, data).await
+        match self.send::<T, T>(request, url, data, false).await? {
+            ParsedResponse::Response(res) => Ok(res),
+            ParsedResponse::ResponseUnknown(_) => unreachable!(), // This should never happen
+        }
     }
 
     /// delete request
@@ -71,7 +83,14 @@ impl Echo<'_> {
     pub async fn delete(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.delete(&full_url);
-        self.send_request_unknown(request, url, None::<()>).await
+        // self.send_request_unknown(request, url, None::<()>).await
+        match self
+            .send::<(), serde_json::Value>(request, url, None, true)
+            .await?
+        {
+            ParsedResponse::ResponseUnknown(res) => Ok(res),
+            ParsedResponse::Response(_) => unreachable!(), // This should never happen
+        }
     }
 
     /// get request for an unknown endpoint
@@ -86,7 +105,15 @@ impl Echo<'_> {
     pub async fn get_unknown(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.get(&full_url);
-        self.send_request_unknown(request, url, None::<()>).await
+        // self.send_request_unknown(request, url, None::<()>).await
+        // self.send(request, url, None::<()>, true).await
+        match self
+            .send::<(), serde_json::Value>(request, url, None, true)
+            .await?
+        {
+            ParsedResponse::ResponseUnknown(res) => Ok(res),
+            ParsedResponse::Response(_) => unreachable!(), // This should never happen
+        }
     }
 
     /// post request with no data
@@ -99,6 +126,13 @@ impl Echo<'_> {
     pub async fn post_no(&self, url: &str) -> Result<ResponseUnknown, EchoError> {
         let full_url = self.get_full_url(url);
         let request = self.client.post(&full_url);
-        self.send_request_unknown(request, url, None::<()>).await
+        // self.send_request_unknown(request, url, None::<()>).await
+        match self
+            .send::<(), serde_json::Value>(request, url, None, true)
+            .await?
+        {
+            ParsedResponse::ResponseUnknown(res) => Ok(res),
+            ParsedResponse::Response(_) => unreachable!(), // This should never happen
+        }
     }
 }

@@ -24,3 +24,9 @@ impl<'a> Deref for ResponseUnknown<'a> {
         &self.inner
     }
 }
+
+#[derive(Debug)]
+pub enum ParsedResponse<'a, T> {
+    Response(Response<'a, T>),
+    ResponseUnknown(ResponseUnknown<'a>),
+}

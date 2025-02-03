@@ -1,13 +1,8 @@
 use reqwest::RequestBuilder;
 use serde::{de::DeserializeOwned, Serialize};
 
+use crate::ParsedResponse;
 use crate::{request::ResponseType, Echo, EchoError, Response, ResponseUnknown};
-
-#[derive(Debug)]
-pub enum ParsedResponse<'a, T> {
-    Response(Response<'a, T>),
-    ResponseUnknown(ResponseUnknown<'a>),
-}
 
 impl Echo<'_> {
     async fn parse<T>(

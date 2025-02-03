@@ -10,7 +10,8 @@ pub use request::RequestConfig;
 pub use response::Response;
 
 use echo_errors::EchoError;
-use response::ResponseUnknown;
+pub use response::ResponseUnknown;
+pub use response::ParsedResponse;
 
 use once_cell::sync::Lazy;
 
